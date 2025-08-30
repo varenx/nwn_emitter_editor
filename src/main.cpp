@@ -527,11 +527,16 @@ int main()
             ImGui::Separator();
 
             ImGui::Text("Special Thanks:");
+            ImGui::BulletText("Neverwinter Vault Discord Community");
+            ImGui::Text("   First and foremost, for keeping this game alive");
             ImGui::BulletText("Sean Barrett - STB Image library");
             ImGui::Text("   https://github.com/nothings");
             ImGui::BulletText("Omar Cornut - Dear ImGui");
             ImGui::Text("   https://github.com/ocornut");
-            ImGui::BulletText("Neverwinter Vault Discord Community");
+            ImGui::BulletText("G-Truc Creation - GLM Mathematics Library");
+            ImGui::Text("   https://github.com/g-truc/glm");
+            ImGui::BulletText("Marcus Geelnard & Camilla Löwy and all contributors - GLFW");
+            ImGui::Text("   https://www.glfw.org");
 
             ImGui::Separator();
             if (ImGui::Button("OK"))

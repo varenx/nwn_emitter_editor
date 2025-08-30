@@ -32,9 +32,11 @@ any later version.
 
 ## Acknowledgments
 
+- **Neverwinter Vault Discord Community** - Support and feedback and for keeping this game alive
 - **Sean Barrett** - STB Image library (https://github.com/nothings)
 - **Omar Cornut** - Dear ImGui (https://github.com/ocornut)
-- **Neverwinter Vault Discord Community** - Support and feedback
+- **G-Truc Creation** - GLM Mathematics Library (https://github.com/g-truc/glm)
+- **Marcus Geelnard & Camilla Löwy and all contributors** - GLFW (https://www.glfw.org)
 
 ## Building
 

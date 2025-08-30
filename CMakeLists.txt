@@ -4,11 +4,23 @@ project(nwn_emitter_editor)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Find required packages
-find_package(OpenGL REQUIRED)
-find_package(glfw3 REQUIRED)
-find_package(glm REQUIRED)
-find_package(PkgConfig REQUIRED)
+include(FetchContent)
+
+FetchContent_Declare(
+	glm
+	GIT_REPOSITORY	https://github.com/g-truc/glm.git
+	GIT_TAG 	bf71a834948186f4097caa076cd2663c69a10e1e #refs/tags/1.0.1
+)
+
+FetchContent_MakeAvailable(glm)
+
+FetchContent_Declare(glfw GIT_REPOSITORY https://github.com/glfw/glfw.git GIT_TAG 3.3.10)
+
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(glfw)
+
 
 # Set up directories
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
@@ -67,14 +79,7 @@ add_executable(${PROJECT_NAME}
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} 
-    OpenGL::GL
     glfw
-    ${CMAKE_DL_LIBS}
+    glm::glm
 )
 
-# Compiler flags
-target_compile_options(${PROJECT_NAME} PRIVATE
-    -Wall -Wextra -Wpedantic
-    $<$<CONFIG:Debug>:-g -O0>
-    $<$<CONFIG:Release>:-O3 -DNDEBUG>
-)
