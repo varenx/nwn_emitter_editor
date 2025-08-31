@@ -1,0 +1,59 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Extract version from tag
+      id: version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          mingw-w64 \
+          g++-mingw-w64-x86-64 \
+          gcc-mingw-w64-x86-64
+    
+    - name: Build Linux (native)
+      run: |
+        mkdir -p build-linux
+        cd build-linux
+        cmake ..
+        make -j$(nproc)
+        mv nwn_emitter_editor nwn_emitter_editor-v${{ steps.version.outputs.VERSION }}
+    
+    - name: Build Windows (cross-compile)
+      run: |
+        mkdir -p build-windows
+        cd build-windows
+        cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw-w64-toolchain.cmake ..
+        make -j$(nproc)
+        mv nwn_emitter_editor.exe nwn_emitter_editor-v${{ steps.version.outputs.VERSION }}.exe
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          build-linux/nwn_emitter_editor-v${{ steps.version.outputs.VERSION }}
+          build-windows/nwn_emitter_editor-v${{ steps.version.outputs.VERSION }}.exe
+        tag_name: ${{ github.ref }}
+        name: Release v${{ steps.version.outputs.VERSION }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
