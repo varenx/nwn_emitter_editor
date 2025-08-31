@@ -27,7 +27,14 @@ jobs:
           cmake \
           mingw-w64 \
           g++-mingw-w64-x86-64 \
-          gcc-mingw-w64-x86-64
+          gcc-mingw-w64-x86-64 \
+          libx11-dev \
+          libxrandr-dev \
+          libxinerama-dev \
+          libxcursor-dev \
+          libxi-dev \
+          libgl1-mesa-dev \
+          libglu1-mesa-dev
     
     - name: Build Linux (native)
       run: |

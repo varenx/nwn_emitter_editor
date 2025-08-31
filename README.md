@@ -32,7 +32,7 @@ any later version.
 
 ## Acknowledgments
 
-- **Neverwinter Vault Discord Community** - Support and feedback and for keeping this game alive
+- **Neverwinter Vault Discord Community** - Support and feedback, and most importanly, keeping this game alive
 - **Sean Barrett** - STB Image library (https://github.com/nothings)
 - **Omar Cornut** - Dear ImGui (https://github.com/ocornut)
 - **G-Truc Creation** - GLM Mathematics Library (https://github.com/g-truc/glm)
@@ -40,7 +40,18 @@ any later version.
 
 ## Building
 
-This project uses CMake and requires OpenGL, GLFW, and GLM. Build with:
+This project uses CMake and requires OpenGL, GLFW, and GLM.
+
+### Build Dependencies
+
+**Debian/Ubuntu:**
+```bash
+sudo apt-get install build-essential cmake libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev
+```
+
+#### TODO: Other distributions
+
+### Build Instructions
 
 ```bash
 mkdir build && cd build
