@@ -4,22 +4,13 @@ project(nwn_emitter_editor)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include(FetchContent)
-
-FetchContent_Declare(
-	glm
-	GIT_REPOSITORY	https://github.com/g-truc/glm.git
-	GIT_TAG 	bf71a834948186f4097caa076cd2663c69a10e1e #refs/tags/1.0.1
-)
-
-FetchContent_MakeAvailable(glm)
-
-FetchContent_Declare(glfw GIT_REPOSITORY https://github.com/glfw/glfw.git GIT_TAG 3.3.10)
-
+# Use local vendor copies
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(glfw)
+
+add_subdirectory(vendor/glfw3)
+add_subdirectory(vendor/glm)
 
 
 # Set up directories
@@ -82,4 +73,7 @@ target_link_libraries(${PROJECT_NAME}
     glfw
     glm::glm
 )
+
+# Define GLM_ENABLE_EXPERIMENTAL for GTX extensions
+target_compile_definitions(${PROJECT_NAME} PRIVATE GLM_ENABLE_EXPERIMENTAL)
 
