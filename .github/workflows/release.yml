@@ -1,0 +1,96 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: Linux
+            artifact: nwn_emitter_editor-linux
+            extension: ""
+          - os: windows-latest
+            name: Windows
+            artifact: nwn_emitter_editor-windows
+            extension: ".exe"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Get version
+      id: version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Setup CMake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: '3.20'
+
+    - name: Install Linux dependencies
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          libgl1-mesa-dev \
+          libglu1-mesa-dev \
+          libxrandr-dev \
+          libxinerama-dev \
+          libxcursor-dev \
+          libxi-dev
+
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Prepare artifacts (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        cp build/nwn_emitter_editor ${{ matrix.artifact }}-${{ steps.version.outputs.VERSION }}
+        chmod +x ${{ matrix.artifact }}-${{ steps.version.outputs.VERSION }}
+
+    - name: Prepare artifacts (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        copy build\Release\nwn_emitter_editor.exe ${{ matrix.artifact }}-${{ steps.version.outputs.VERSION }}${{ matrix.extension }}
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact }}-${{ steps.version.outputs.VERSION }}${{ matrix.extension }}
+        path: ${{ matrix.artifact }}-${{ steps.version.outputs.VERSION }}${{ matrix.extension }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: Get version
+      id: version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          nwn_emitter_editor-linux-${{ steps.version.outputs.VERSION }}/nwn_emitter_editor-linux-${{ steps.version.outputs.VERSION }}
+          nwn_emitter_editor-windows-${{ steps.version.outputs.VERSION }}.exe/nwn_emitter_editor-windows-${{ steps.version.outputs.VERSION }}.exe
+        draft: false
+        prerelease: false
