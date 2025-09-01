@@ -17,20 +17,18 @@
  */
 
 #include "property_editor.hpp"
-#include "file_dialog.hpp"
 #include <algorithm>
 #include <cstring>
 #include <filesystem>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#include "file_dialog.hpp"
 
-PropertyEditor::PropertyEditor() : propertiesChanged(false)
-{
-}
+PropertyEditor::PropertyEditor() : propertiesChanged(false) {}
 
 PropertyEditor::~PropertyEditor() = default;
 
-void PropertyEditor::render(EmitterEditor& editor, int& selectedEmitter)
+void PropertyEditor::render(EmitterEditor &editor, int &selectedEmitter)
 {
     // Render outliner window
     renderOutliner(editor, selectedEmitter);
@@ -38,12 +36,10 @@ void PropertyEditor::render(EmitterEditor& editor, int& selectedEmitter)
     // Render property editor window
     ImGui::Begin("Property Editor");
 
-    auto& emitters = editor.getEmitters();
-    if (selectedEmitter >= 0 && selectedEmitter < static_cast<int>(emitters.size()))
-    {
+    auto &emitters = editor.getEmitters();
+    if (selectedEmitter >= 0 && selectedEmitter < static_cast<int>(emitters.size())) {
         renderEmitterProperties(emitters[selectedEmitter]);
-    } else
-    {
+    } else {
         ImGui::Text("No emitter selected");
         ImGui::Text("Select an emitter from the Outliner to edit its properties.");
     }
@@ -51,15 +47,14 @@ void PropertyEditor::render(EmitterEditor& editor, int& selectedEmitter)
     ImGui::End();
 }
 
-void PropertyEditor::renderOutliner(EmitterEditor& editor, int& selectedEmitter)
+void PropertyEditor::renderOutliner(EmitterEditor &editor, int &selectedEmitter)
 {
     ImGui::Begin("Outliner");
 
-    auto& emitters = editor.getEmitters();
+    auto &emitters = editor.getEmitters();
     ImGui::Text("Emitters (%zu)", emitters.size());
 
-    if (ImGui::Button("Add Emitter"))
-    {
+    if (ImGui::Button("Add Emitter")) {
         editor.addEmitter("emitter_" + std::to_string(emitters.size() + 1));
         selectedEmitter = static_cast<int>(emitters.size() - 1);
         propertiesChanged = true;
@@ -67,8 +62,7 @@ void PropertyEditor::renderOutliner(EmitterEditor& editor, int& selectedEmitter)
 
     ImGui::SameLine();
     if (ImGui::Button("Remove Emitter") && selectedEmitter >= 0 &&
-        selectedEmitter < static_cast<int>(emitters.size()))
-    {
+        selectedEmitter < static_cast<int>(emitters.size())) {
         editor.removeEmitter(selectedEmitter);
         selectedEmitter = std::min(selectedEmitter, static_cast<int>(emitters.size() - 1));
         if (selectedEmitter < 0 && !emitters.empty())
@@ -79,11 +73,9 @@ void PropertyEditor::renderOutliner(EmitterEditor& editor, int& selectedEmitter)
     ImGui::Separator();
 
     // List emitters
-    for (int i = 0; i < static_cast<int>(emitters.size()); ++i)
-    {
+    for (int i = 0; i < static_cast<int>(emitters.size()); ++i) {
         bool isSelected = (i == selectedEmitter);
-        if (ImGui::Selectable(emitters[i].name.c_str(), isSelected))
-        {
+        if (ImGui::Selectable(emitters[i].name.c_str(), isSelected)) {
             selectedEmitter = i;
         }
     }
@@ -92,25 +84,20 @@ void PropertyEditor::renderOutliner(EmitterEditor& editor, int& selectedEmitter)
 }
 
 
-void PropertyEditor::renderEmitterProperties(EmitterNode& emitter)
+void PropertyEditor::renderEmitterProperties(EmitterNode &emitter)
 {
     ImGui::Text("Emitter: %s", emitter.name.c_str());
 
-    if (ImGui::CollapsingHeader("Basic Properties", ImGuiTreeNodeFlags_DefaultOpen))
-    {
+    if (ImGui::CollapsingHeader("Basic Properties", ImGuiTreeNodeFlags_DefaultOpen)) {
         char nameBuf[256];
         strcpy(nameBuf, emitter.name.c_str());
-        if (ImGui::InputText("Name", nameBuf, sizeof(nameBuf)))
-        {
+        if (ImGui::InputText("Name", nameBuf, sizeof(nameBuf))) {
             std::string newName = nameBuf;
-            if (newName.empty() || newName.find_first_not_of(" \t\n\r") == std::string::npos)
-            {
+            if (newName.empty() || newName.find_first_not_of(" \t\n\r") == std::string::npos) {
                 // Empty or whitespace-only name, use default
                 emitter.name = "default_emitter";
-                ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f),
-                                   "Warning: Empty name replaced with default");
-            } else
-            {
+                ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Warning: Empty name replaced with default");
+            } else {
                 emitter.name = newName;
             }
             propertiesChanged = true;
@@ -118,8 +105,7 @@ void PropertyEditor::renderEmitterProperties(EmitterNode& emitter)
 
         char parentBuf[256];
         strcpy(parentBuf, emitter.parent.c_str());
-        if (ImGui::InputText("Parent", parentBuf, sizeof(parentBuf)))
-        {
+        if (ImGui::InputText("Parent", parentBuf, sizeof(parentBuf))) {
             emitter.parent = parentBuf;
             propertiesChanged = true;
         }
@@ -130,19 +116,17 @@ void PropertyEditor::renderEmitterProperties(EmitterNode& emitter)
         renderSpawnTypeCombo(emitter.spawntype);
     }
 
-    if (ImGui::CollapsingHeader("Texture Properties"))
-    {
+    if (ImGui::CollapsingHeader("Texture Properties")) {
         ImGui::Text("Texture: %s", emitter.texture.empty() ? "(none)" : emitter.texture.c_str());
         ImGui::SameLine();
-        if (ImGui::Button("Browse...##texture"))
-        {
+        if (ImGui::Button("Browse...##texture")) {
+            FileDialog::clearFileCache();
             ImGui::OpenPopup("Select Texture");
         }
 
         // Texture selection dialog
         static std::string selectedTexturePath;
-        if (FileDialog::renderTextureDialog("Select Texture", selectedTexturePath))
-        {
+        if (FileDialog::renderTextureDialog("Select Texture", selectedTexturePath)) {
             emitter.texturePath = selectedTexturePath;
             emitter.texture = std::filesystem::path(selectedTexturePath).stem().string();
             propertiesChanged = true;
@@ -166,24 +150,21 @@ void PropertyEditor::renderEmitterProperties(EmitterNode& emitter)
             propertiesChanged = true;
     }
 
-    if (ImGui::CollapsingHeader("Transform"))
-    {
+    if (ImGui::CollapsingHeader("Transform")) {
         if (renderVec3Edit("Position", emitter.position))
             propertiesChanged = true;
         if (renderVec3Edit("Orientation (°)", emitter.eulerAngles))
             propertiesChanged = true;
     }
 
-    if (ImGui::CollapsingHeader("Emitter Geometry"))
-    {
+    if (ImGui::CollapsingHeader("Emitter Geometry")) {
         if (renderEditableFloat("X Size", emitter.xsize, 0.1f))
             propertiesChanged = true;
         if (renderEditableFloat("Y Size", emitter.ysize, 0.1f))
             propertiesChanged = true;
     }
 
-    if (ImGui::CollapsingHeader("Particle Behavior", ImGuiTreeNodeFlags_DefaultOpen))
-    {
+    if (ImGui::CollapsingHeader("Particle Behavior", ImGuiTreeNodeFlags_DefaultOpen)) {
         if (renderEditableFloat("Birth Rate", emitter.birthrate, 0.1f, 0.0f, 500.0f))
             propertiesChanged = true;
         if (renderEditableFloat("Life Expectancy", emitter.lifeExp, 0.1f, 0.1f))
@@ -204,8 +185,7 @@ void PropertyEditor::renderEmitterProperties(EmitterNode& emitter)
             propertiesChanged = true;
     }
 
-    if (ImGui::CollapsingHeader("Color and Alpha", ImGuiTreeNodeFlags_DefaultOpen))
-    {
+    if (ImGui::CollapsingHeader("Color and Alpha", ImGuiTreeNodeFlags_DefaultOpen)) {
         if (renderColorEdit("Color Start", emitter.colorStart))
             propertiesChanged = true;
         if (renderColorEdit("Color End", emitter.colorEnd))
@@ -216,8 +196,7 @@ void PropertyEditor::renderEmitterProperties(EmitterNode& emitter)
             propertiesChanged = true;
     }
 
-    if (ImGui::CollapsingHeader("Size"))
-    {
+    if (ImGui::CollapsingHeader("Size")) {
         if (renderEditableFloat("Size Start", emitter.sizeStart, 0.1f))
             propertiesChanged = true;
         if (renderEditableFloat("Size End", emitter.sizeEnd, 0.1f))
@@ -229,16 +208,14 @@ void PropertyEditor::renderEmitterProperties(EmitterNode& emitter)
     }
 
 
-    if (ImGui::CollapsingHeader("Blast Properties"))
-    {
+    if (ImGui::CollapsingHeader("Blast Properties")) {
         if (renderEditableFloat("Blast Radius", emitter.blastRadius, 1.0f))
             propertiesChanged = true;
         if (renderEditableFloat("Blast Length", emitter.blastLength, 1.0f))
             propertiesChanged = true;
     }
 
-    if (ImGui::CollapsingHeader("Lightning Properties"))
-    {
+    if (ImGui::CollapsingHeader("Lightning Properties")) {
         if (renderEditableFloat("Lightning Delay", emitter.lightningDelay, 0.1f))
             propertiesChanged = true;
         if (renderEditableFloat("Lightning Radius", emitter.lightningRadius, 1.0f))
@@ -251,8 +228,7 @@ void PropertyEditor::renderEmitterProperties(EmitterNode& emitter)
             propertiesChanged = true;
     }
 
-    if (ImGui::CollapsingHeader("Advanced Properties"))
-    {
+    if (ImGui::CollapsingHeader("Advanced Properties")) {
         if (ImGui::Checkbox("P2P", &emitter.p2p))
             propertiesChanged = true;
         if (renderEditableInt("P2P Selection", emitter.p2p_sel, 1, 10))
@@ -286,21 +262,20 @@ void PropertyEditor::renderEmitterProperties(EmitterNode& emitter)
     }
 }
 
-void PropertyEditor::renderUpdateTypeCombo(UpdateType& updateType)
+void PropertyEditor::renderUpdateTypeCombo(UpdateType &updateType)
 {
-    const char* updateTypes[] = {"Fountain", "Single", "Explosion", "Lightning"};
+    const char *updateTypes[] = {"Fountain", "Single", "Explosion", "Lightning"};
     int currentUpdate = static_cast<int>(updateType);
 
-    if (ImGui::Combo("Update Type", &currentUpdate, updateTypes, 4))
-    {
+    if (ImGui::Combo("Update Type", &currentUpdate, updateTypes, 4)) {
         updateType = static_cast<UpdateType>(currentUpdate);
         propertiesChanged = true;
     }
 }
 
-void PropertyEditor::renderRenderTypeCombo(RenderType& renderType)
+void PropertyEditor::renderRenderTypeCombo(RenderType &renderType)
 {
-    const char* renderTypes[] = {"Normal",
+    const char *renderTypes[] = {"Normal",
                                  "Linked",
                                  "Billboard to Local Z",
                                  "Billboard to World Z",
@@ -309,43 +284,39 @@ void PropertyEditor::renderRenderTypeCombo(RenderType& renderType)
                                  "Motion Blur"};
     int currentRender = static_cast<int>(renderType);
 
-    if (ImGui::Combo("Render Type", &currentRender, renderTypes, 7))
-    {
+    if (ImGui::Combo("Render Type", &currentRender, renderTypes, 7)) {
         renderType = static_cast<RenderType>(currentRender);
         propertiesChanged = true;
     }
 }
 
-void PropertyEditor::renderBlendTypeCombo(BlendType& blendType)
+void PropertyEditor::renderBlendTypeCombo(BlendType &blendType)
 {
-    const char* blendTypes[] = {"Normal", "Punch-Through", "Lighten"};
+    const char *blendTypes[] = {"Normal", "Punch-Through", "Lighten"};
     int currentBlend = static_cast<int>(blendType);
 
-    if (ImGui::Combo("Blend Type", &currentBlend, blendTypes, 3))
-    {
+    if (ImGui::Combo("Blend Type", &currentBlend, blendTypes, 3)) {
         blendType = static_cast<BlendType>(currentBlend);
         propertiesChanged = true;
     }
 }
 
-void PropertyEditor::renderSpawnTypeCombo(SpawnType& spawnType)
+void PropertyEditor::renderSpawnTypeCombo(SpawnType &spawnType)
 {
-    const char* spawnTypes[] = {"Normal", "Trail"};
+    const char *spawnTypes[] = {"Normal", "Trail"};
     int currentSpawn = static_cast<int>(spawnType);
 
-    if (ImGui::Combo("Spawn Type", &currentSpawn, spawnTypes, 2))
-    {
+    if (ImGui::Combo("Spawn Type", &currentSpawn, spawnTypes, 2)) {
         spawnType = static_cast<SpawnType>(currentSpawn);
         propertiesChanged = true;
     }
 }
 
-bool PropertyEditor::renderColorEdit(const char* label, glm::vec3& color)
+bool PropertyEditor::renderColorEdit(const char *label, glm::vec3 &color)
 {
     float colorArray[3] = {color.r, color.g, color.b};
     bool changed = ImGui::ColorEdit3(label, colorArray);
-    if (changed)
-    {
+    if (changed) {
         color.r = colorArray[0];
         color.g = colorArray[1];
         color.b = colorArray[2];
@@ -353,12 +324,11 @@ bool PropertyEditor::renderColorEdit(const char* label, glm::vec3& color)
     return changed;
 }
 
-bool PropertyEditor::renderVec3Edit(const char* label, glm::vec3& vec)
+bool PropertyEditor::renderVec3Edit(const char *label, glm::vec3 &vec)
 {
     float vecArray[3] = {vec.x, vec.y, vec.z};
     bool changed = ImGui::DragFloat3(label, vecArray, 0.1f);
-    if (changed)
-    {
+    if (changed) {
         vec.x = vecArray[0];
         vec.y = vecArray[1];
         vec.z = vecArray[2];
@@ -366,15 +336,14 @@ bool PropertyEditor::renderVec3Edit(const char* label, glm::vec3& vec)
     return changed;
 }
 
-bool PropertyEditor::renderQuatEdit(const char* label, glm::quat& quat)
+bool PropertyEditor::renderQuatEdit(const char *label, glm::quat &quat)
 {
     // Convert quaternion to euler angles for editing
     glm::vec3 euler = glm::degrees(glm::eulerAngles(quat));
     float eulerArray[3] = {euler.x, euler.y, euler.z};
 
     bool changed = ImGui::DragFloat3(label, eulerArray, 1.0f, -360.0f, 360.0f);
-    if (changed)
-    {
+    if (changed) {
         euler.x = glm::radians(eulerArray[0]);
         euler.y = glm::radians(eulerArray[1]);
         euler.z = glm::radians(eulerArray[2]);
@@ -383,30 +352,25 @@ bool PropertyEditor::renderQuatEdit(const char* label, glm::quat& quat)
     return changed;
 }
 
-bool PropertyEditor::renderEditableFloat(const char* label, float& value, float speed, float min,
-                                         float max)
+bool PropertyEditor::renderEditableFloat(const char *label, float &value, float speed, float min, float max)
 {
     // Use InputFloat which allows typing and double-click editing
-    if (min == 0.0f && max == 0.0f)
-    {
+    if (min == 0.0f && max == 0.0f) {
         // No limits - use InputFloat for direct text editing
         return ImGui::InputFloat(label, &value, speed, speed * 10.0f, "%.3f");
-    } else
-    {
+    } else {
         // With limits - use DragFloat but with much wider range
         return ImGui::DragFloat(label, &value, speed, min, max);
     }
 }
 
-bool PropertyEditor::renderEditableInt(const char* label, int& value, int min, int max)
+bool PropertyEditor::renderEditableInt(const char *label, int &value, int min, int max)
 {
     // Use InputInt which allows typing and editing
-    if (min == 0 && max == 0)
-    {
+    if (min == 0 && max == 0) {
         // No limits
         return ImGui::InputInt(label, &value);
-    } else
-    {
+    } else {
         // With limits - use DragInt
         return ImGui::DragInt(label, &value, 1.0f, min, max);
     }
