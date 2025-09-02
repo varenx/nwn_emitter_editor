@@ -153,7 +153,7 @@ void PropertyEditor::renderEmitterProperties(EmitterNode &emitter)
     if (ImGui::CollapsingHeader("Transform")) {
         if (renderVec3Edit("Position", emitter.position))
             propertiesChanged = true;
-        if (renderVec3Edit("Orientation (°)", emitter.eulerAngles))
+        if (renderVec3Edit("Orientation (°)", emitter.rotationAngles))
             propertiesChanged = true;
     }
 
