@@ -93,6 +93,9 @@ public:
         return colorTexture;
     }
 
+    int getActiveParticleCount(int emitterIndex) const;
+    int getTotalActiveParticleCount() const;
+
 private:
     void updateParticles(const EmitterNode& emitter, ParticleSystemState& state, float deltaTime);
     void spawnParticle(const EmitterNode& emitter, ParticleSystemState& state,

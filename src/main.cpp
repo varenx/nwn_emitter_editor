@@ -549,6 +549,33 @@ int main()
 
                     drawList->AddText(textPos, axisColors[i], axisLabels[i]);
                 }
+
+                // Display particle counters above orientation gizmo
+                int activeParticleCount = (selectedEmitter >= 0 && selectedEmitter < static_cast<int>(emitterEditor.getEmitters().size())) 
+                    ? particleRenderer.getActiveParticleCount(selectedEmitter) : 0;
+                int totalParticleCount = particleRenderer.getTotalActiveParticleCount();
+
+                // Position counters above the gizmo area (top-right corner)
+                ImVec2 counterPos = ImVec2(imagePos.x + previewSize.x - 120.0f, imagePos.y + 10.0f);
+                
+                // Create counter text
+                std::string activeCountText = "Active: " + std::to_string(activeParticleCount);
+                std::string totalCountText = "Total: " + std::to_string(totalParticleCount);
+                
+                // Draw active emitter particle count
+                ImVec2 activeTextSize = ImGui::CalcTextSize(activeCountText.c_str());
+                drawList->AddRectFilled(ImVec2(counterPos.x - 4, counterPos.y - 2),
+                                        ImVec2(counterPos.x + activeTextSize.x + 4, counterPos.y + activeTextSize.y + 2),
+                                        IM_COL32(0, 0, 0, 180));
+                drawList->AddText(counterPos, IM_COL32(255, 255, 255, 255), activeCountText.c_str());
+                
+                // Draw total particle count below the active count
+                ImVec2 totalCounterPos = ImVec2(counterPos.x, counterPos.y + activeTextSize.y + 4);
+                ImVec2 totalTextSize = ImGui::CalcTextSize(totalCountText.c_str());
+                drawList->AddRectFilled(ImVec2(totalCounterPos.x - 4, totalCounterPos.y - 2),
+                                        ImVec2(totalCounterPos.x + totalTextSize.x + 4, totalCounterPos.y + totalTextSize.y + 2),
+                                        IM_COL32(0, 0, 0, 180));
+                drawList->AddText(totalCounterPos, IM_COL32(200, 200, 255, 255), totalCountText.c_str());
             } else {
                 ImGui::Dummy(previewSize);
                 ImGui::Text("No texture rendered");

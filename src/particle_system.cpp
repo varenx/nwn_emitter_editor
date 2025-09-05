@@ -1223,3 +1223,31 @@ void ParticleRenderer::renderToTexture(const std::vector<EmitterNode>& emitters,
     // Unbind framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+
+int ParticleRenderer::getActiveParticleCount(int emitterIndex) const
+{
+    if (emitterIndex < 0 || emitterIndex >= static_cast<int>(emitterStates.size()))
+        return 0;
+
+    int activeCount = 0;
+    for (const auto& particle : emitterStates[emitterIndex].particles)
+    {
+        if (particle.active)
+            activeCount++;
+    }
+    return activeCount;
+}
+
+int ParticleRenderer::getTotalActiveParticleCount() const
+{
+    int totalCount = 0;
+    for (const auto& state : emitterStates)
+    {
+        for (const auto& particle : state.particles)
+        {
+            if (particle.active)
+                totalCount++;
+        }
+    }
+    return totalCount;
+}
