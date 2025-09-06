@@ -16,22 +16,34 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef STB_DDS_HPP
-#define STB_DDS_HPP
+#ifndef GRAB_MODE_HPP
+#define GRAB_MODE_HPP
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+enum class GrabMode
+{
+    None,
+    Free,
+    X_Axis,
+    Y_Axis,
+    Z_Axis,
+    YZ_Plane,
+    XZ_Plane,
+    XY_Plane
+};
 
-unsigned char* stbi_load_dds_from_memory(unsigned char const* buffer, int len, int* x, int* y, int* channels_in_file,
-                                         int desired_channels);
-unsigned char* stbi_load_dds(char const* filename, int* x, int* y, int* channels_in_file, int desired_channels);
+enum class ScaleMode
+{
+    None,
+    Uniform
+};
 
-int stbi_dds_test_memory(unsigned char const* buffer, int len);
-int stbi_dds_test(char const* filename);
+enum class RotationMode
+{
+    None,
+    Free,
+    X_Axis,
+    Y_Axis,
+    Z_Axis
+};
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif // STB_DDS_HPP
+#endif // GRAB_MODE_HPP

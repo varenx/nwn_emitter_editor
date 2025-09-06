@@ -19,6 +19,21 @@ create, edit, and preview particle emitters used in NWN models with real-time 3D
 - **Shift+D** - Duplicate selected emitter
 - **X** - Delete selected emitter
 
+### Emitter Transformations (Viewport Only)
+- **G** - Grab/move selected emitter
+- **S** - Scale selected emitter
+- **R** - Rotate selected emitter
+
+### Transformation Constraints (During G/S/R)
+- **X** - Constrain to X-axis only
+- **Y** - Constrain to Y-axis only
+- **Z** - Constrain to Z-axis only
+- **Shift+X** - Exclude X-axis (move on Y-Z plane)
+- **Shift+Y** - Exclude Y-axis (move on X-Z plane)
+- **Shift+Z** - Exclude Z-axis (move on X-Y plane)
+- **Left Click** - Confirm transformation
+- **Right Click / ESC** - Cancel transformation
+
 ### Camera Controls
 - **Middle Mouse** - Rotate camera around target
 - **Shift+Middle Mouse** - Pan camera

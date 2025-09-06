@@ -19,15 +19,14 @@
 #include "camera.hpp"
 #include <algorithm>
 
-Camera::Camera()
-    : target(0.0f, 0.0f, 0.0f), up(0.0f, 0.0f, 1.0f), distance(5.0f), yaw(180.0f), pitch(0.0f),
-      lastMouseX(0.0), lastMouseY(0.0), firstMouse(true)
+Camera::Camera() :
+    target(0.0f, 0.0f, 0.0f), up(0.0f, 0.0f, 1.0f), distance(5.0f), yaw(180.0f), pitch(0.0f), lastMouseX(0.0),
+    lastMouseY(0.0), firstMouse(true)
 {
     updatePosition();
 }
 
-void Camera::update(double mouseX, double mouseY, bool middlePressed, bool shiftPressed,
-                    float scrollOffset)
+void Camera::update(double mouseX, double mouseY, bool middlePressed, bool shiftPressed, float scrollOffset)
 {
     // Handle scroll (dollying)
     if (scrollOffset != 0.0f)
@@ -61,7 +60,8 @@ void Camera::update(double mouseX, double mouseY, bool middlePressed, bool shift
             target += right * static_cast<float>(deltaX * sensitivity * distance);
             target += localUp * static_cast<float>(deltaY * sensitivity * distance);
             updatePosition();
-        } else
+        }
+        else
         {
             // Turntable rotation (middle mouse)
             float sensitivity = 0.5f;
@@ -73,7 +73,8 @@ void Camera::update(double mouseX, double mouseY, bool middlePressed, bool shift
 
             updatePosition();
         }
-    } else
+    }
+    else
     {
         firstMouse = true;
     }
@@ -92,10 +93,7 @@ void Camera::updatePosition()
     position = target + glm::vec3(x, y, z);
 }
 
-glm::mat4 Camera::getViewMatrix() const
-{
-    return glm::lookAt(position, target, up);
-}
+glm::mat4 Camera::getViewMatrix() const { return glm::lookAt(position, target, up); }
 
 glm::mat4 Camera::getProjectionMatrix(float aspect) const
 {
@@ -106,9 +104,9 @@ void Camera::reset()
 {
     target = glm::vec3(0.0f, 0.0f, 0.0f);
     distance = 5.0f;
-    yaw = 180.0f;     // Position camera at negative Y (toward viewer)
-    pitch = 0.0f;     // Level with the ground plane
-    firstMouse = true;// Reset mouse tracking
+    yaw = 180.0f; // Position camera at negative Y (toward viewer)
+    pitch = 0.0f; // Level with the ground plane
+    firstMouse = true; // Reset mouse tracking
     updatePosition();
 }
 
@@ -116,5 +114,5 @@ void Camera::setLastMousePosition(double mouseX, double mouseY)
 {
     lastMouseX = mouseX;
     lastMouseY = mouseY;
-    firstMouse = false;// Mark that we have a valid mouse position
+    firstMouse = false; // Mark that we have a valid mouse position
 }

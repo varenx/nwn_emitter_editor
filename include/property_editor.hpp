@@ -19,8 +19,8 @@
 #ifndef PROPERTY_EDITOR_HPP
 #define PROPERTY_EDITOR_HPP
 
-#include "emitter.hpp"
 #include <imgui.h>
+#include "emitter.hpp"
 
 class PropertyEditor
 {
@@ -29,14 +29,8 @@ public:
     ~PropertyEditor();
 
     void render(EmitterEditor& editor, int& selectedEmitter);
-    bool hasChanges() const
-    {
-        return propertiesChanged;
-    }
-    void resetChangeFlag()
-    {
-        propertiesChanged = false;
-    }
+    bool hasChanges() const { return propertiesChanged; }
+    void resetChangeFlag() { propertiesChanged = false; }
 
 private:
     void renderOutliner(EmitterEditor& editor, int& selectedEmitter);
@@ -53,9 +47,8 @@ private:
     bool renderColorEdit(const char* label, glm::vec3& color);
     bool renderVec3Edit(const char* label, glm::vec3& vec);
     bool renderQuatEdit(const char* label, glm::quat& quat);
-    bool renderEditableFloat(const char* label, float& value, float speed = 0.1f, float min = 0.0f,
-                             float max = 0.0f);
+    bool renderEditableFloat(const char* label, float& value, float speed = 0.1f, float min = 0.0f, float max = 0.0f);
     bool renderEditableInt(const char* label, int& value, int min = 0, int max = 0);
 };
 
-#endif// PROPERTY_EDITOR_HPP
+#endif // PROPERTY_EDITOR_HPP

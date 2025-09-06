@@ -23,14 +23,15 @@
 #include <string>
 #include <vector>
 
-class FileDialog {
+class FileDialog
+{
 public:
-    static bool renderLoadDialog(const char *label, std::string &selectedFile);
-    static bool renderSaveDialog(const char *label, std::string &filename);
-    static bool renderSaveAsDialog(const char *label, std::string &filename, const std::string &currentPath);
-    static bool renderTextureDialog(const char *label, std::string &selectedTexture);
-    static std::string extractModelName(const std::string &filename);
-    static void setLastSavedFilename(const std::string &filename);
+    static bool renderLoadDialog(const char* label, std::string& selectedFile);
+    static bool renderSaveDialog(const char* label, std::string& filename);
+    static bool renderSaveAsDialog(const char* label, std::string& filename, const std::string& currentPath);
+    static bool renderTextureDialog(const char* label, std::string& selectedTexture);
+    static std::string extractModelName(const std::string& filename);
+    static void setLastSavedFilename(const std::string& filename);
     static void clearFileCache();
 
 private:
@@ -41,12 +42,12 @@ private:
     static std::vector<std::filesystem::path> cachedDirectoryContents;
     static bool filesLoaded;
 
-    static void navigateToPath(const std::string &path);
+    static void navigateToPath(const std::string& path);
     static std::vector<std::filesystem::path> getDirectoryContents();
     static std::vector<std::filesystem::path> getFilteredDirectoryContents();
-    static bool isValidMDLFilename(const std::string &filename);
-    static bool isValidTextureFile(const std::string &filename);
-    static bool matchesFilter(const std::string &filename);
+    static bool isValidMDLFilename(const std::string& filename);
+    static bool isValidTextureFile(const std::string& filename);
+    static bool matchesFilter(const std::string& filename);
 };
 
 #endif // FILE_DIALOG_HPP

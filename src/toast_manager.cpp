@@ -23,16 +23,12 @@
 #include <iomanip>
 #include <sstream>
 
-ToastManager::ToastManager()
-{
-}
+ToastManager::ToastManager() {}
 
-ToastManager::~ToastManager()
-{
-}
+ToastManager::~ToastManager() {}
 
-void ToastManager::addToast(const std::string& title, const std::string& message,
-                            const std::string& icon, bool showTimestamp)
+void ToastManager::addToast(const std::string& title, const std::string& message, const std::string& icon,
+                            bool showTimestamp)
 {
     // Remove oldest toasts if we're at max capacity
     while (toasts.size() >= static_cast<size_t>(maxToasts))
@@ -48,7 +44,7 @@ void ToastManager::addToast(const std::string& title, const std::string& message
 void ToastManager::update(float deltaTime)
 {
     // Update all toasts
-    for (auto& toast: toasts)
+    for (auto& toast : toasts)
     {
         toast.timeAlive += deltaTime;
         toast.alpha = toast.getAlpha();
@@ -65,9 +61,8 @@ void ToastManager::render()
 
     // Get the main window viewport for positioning relative to the window
     ImGuiViewport* viewport = ImGui::GetMainViewport();
-    ImVec2 windowPos =
-        ImVec2(viewport->Pos.x + viewport->Size.x - 10,
-               viewport->Pos.y + viewport->Size.y - 10);// Bottom right corner of main window
+    ImVec2 windowPos = ImVec2(viewport->Pos.x + viewport->Size.x - 10,
+                              viewport->Pos.y + viewport->Size.y - 10); // Bottom right corner of main window
 
     // Render toasts from bottom to top (newest at bottom)
     float totalHeight = 0;
@@ -83,18 +78,18 @@ void ToastManager::render()
         ImVec2 textSize = ImGui::CalcTextSize(toast.title.c_str());
         ImVec2 messageSize = ImGui::CalcTextSize(toast.message.c_str());
 
-        float toastWidth = std::max(textSize.x, messageSize.x) + 20;// Padding
-        float toastHeight = textSize.y + messageSize.y + 20;        // Title + message + padding
+        float toastWidth = std::max(textSize.x, messageSize.x) + 20; // Padding
+        float toastHeight = textSize.y + messageSize.y + 20; // Title + message + padding
 
         if (toast.showTimestamp)
         {
             std::string timestampStr = formatTimestamp(toast.timestamp);
             ImVec2 timestampSize = ImGui::CalcTextSize(timestampStr.c_str());
             toastWidth = std::max(toastWidth, timestampSize.x + 20);
-            toastHeight += timestampSize.y + 5;// Add timestamp height + spacing
+            toastHeight += timestampSize.y + 5; // Add timestamp height + spacing
         }
 
-        totalHeight += toastHeight + 10;// Toast height + spacing between toasts
+        totalHeight += toastHeight + 10; // Toast height + spacing between toasts
     }
 
     // Now render each toast
@@ -143,9 +138,8 @@ void ToastManager::render()
         std::string windowName = "Toast##" + std::to_string(i);
 
         if (ImGui::Begin(windowName.c_str(), nullptr,
-                         ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs |
-                             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
-                             ImGuiWindowFlags_NoFocusOnAppearing))
+                         ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove |
+                             ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing))
         {
 
             // Render icon if provided
@@ -177,15 +171,14 @@ void ToastManager::render()
         ImGui::End();
 
         // Pop styling
-        ImGui::PopStyleColor(2);// WindowBg, Border
-        ImGui::PopStyleVar(3);  // Alpha, WindowRounding, WindowBorderSize
+        ImGui::PopStyleColor(2); // WindowBg, Border
+        ImGui::PopStyleVar(3); // Alpha, WindowRounding, WindowBorderSize
 
-        currentY += toastHeight + 10;// Move to next toast position
+        currentY += toastHeight + 10; // Move to next toast position
     }
 }
 
-std::string ToastManager::formatTimestamp(
-    const std::chrono::system_clock::time_point& timestamp) const
+std::string ToastManager::formatTimestamp(const std::chrono::system_clock::time_point& timestamp) const
 {
     // Convert to time_t for formatting
     std::time_t time = std::chrono::system_clock::to_time_t(timestamp);
@@ -225,9 +218,6 @@ std::string ToastManager::formatTimestamp(
 
 void ToastManager::removeExpiredToasts()
 {
-    toasts.erase(std::remove_if(toasts.begin(), toasts.end(),
-                                [](const Toast& toast) {
-                                    return toast.shouldRemove();
-                                }),
+    toasts.erase(std::remove_if(toasts.begin(), toasts.end(), [](const Toast& toast) { return toast.shouldRemove(); }),
                  toasts.end());
 }

@@ -26,15 +26,18 @@
 #include <string>
 #include <vector>
 
-struct AnimationKeyframe {
+struct AnimationKeyframe
+{
     float time;
     glm::vec3 value;
 
     AnimationKeyframe() : time(0.0f), value(0.0f) {}
-    AnimationKeyframe(float t, const glm::vec3 &v) : time(t), value(v) {}
+
+    AnimationKeyframe(float t, const glm::vec3& v) : time(t), value(v) {}
 };
 
-struct AnimationTrack {
+struct AnimationTrack
+{
     std::vector<AnimationKeyframe> keyframes;
 
     glm::vec3 getValueAtTime(float time) const
@@ -45,8 +48,10 @@ struct AnimationTrack {
             return keyframes[0].value;
 
         // Find the two keyframes to interpolate between
-        for (size_t i = 0; i < keyframes.size() - 1; ++i) {
-            if (time >= keyframes[i].time && time <= keyframes[i + 1].time) {
+        for (size_t i = 0; i < keyframes.size() - 1; ++i)
+        {
+            if (time >= keyframes[i].time && time <= keyframes[i + 1].time)
+            {
                 float t = (time - keyframes[i].time) / (keyframes[i + 1].time - keyframes[i].time);
                 return glm::mix(keyframes[i].value, keyframes[i + 1].value, t);
             }
@@ -59,9 +64,16 @@ struct AnimationTrack {
     }
 };
 
-enum class UpdateType { Fountain, Single, Explosion, Lightning };
+enum class UpdateType
+{
+    Fountain,
+    Single,
+    Explosion,
+    Lightning
+};
 
-enum class RenderType {
+enum class RenderType
+{
     Normal,
     Linked,
     Billboard_to_Local_Z,
@@ -71,11 +83,21 @@ enum class RenderType {
     Motion_Blur
 };
 
-enum class BlendType { Normal, Punch_Through, Lighten };
+enum class BlendType
+{
+    Normal,
+    Punch_Through,
+    Lighten
+};
 
-enum class SpawnType { Normal = 0, Trail = 1 };
+enum class SpawnType
+{
+    Normal = 0,
+    Trail = 1
+};
 
-struct EmitterNode {
+struct EmitterNode
+{
     std::string name = "emitter";
     std::string parent = "NULL";
 
@@ -183,19 +205,19 @@ struct EmitterNode {
     }
 
     // Coordinate conversion helpers (MDL uses Y-up, editor uses Z-up)
-    static glm::vec3 convertMDLToGame(const glm::vec3 &mdlPos)
+    static glm::vec3 convertMDLToGame(const glm::vec3& mdlPos)
     {
         // MDL Y-up → Editor Z-up: X→X, Y→Z, Z→Y
         return glm::vec3(mdlPos.x, mdlPos.z, mdlPos.y);
     }
 
-    static glm::vec3 convertGameToMDL(const glm::vec3 &gamePos)
+    static glm::vec3 convertGameToMDL(const glm::vec3& gamePos)
     {
         // Editor Z-up → MDL Y-up: X→X, Z→Y, Y→Z
         return glm::vec3(gamePos.x, gamePos.z, gamePos.y);
     }
 
-    static glm::quat convertMDLToGameOrientation(const glm::quat &mdlQuat)
+    static glm::quat convertMDLToGameOrientation(const glm::quat& mdlQuat)
     {
         // Convert Y-up quaternion to Z-up quaternion
         // To rotate Y-up to Z-up: rotate around Y-axis
@@ -203,7 +225,7 @@ struct EmitterNode {
         return coordTransform * mdlQuat;
     }
 
-    static glm::quat convertGameToMDLOrientation(const glm::quat &gameQuat)
+    static glm::quat convertGameToMDLOrientation(const glm::quat& gameQuat)
     {
         // Convert Z-up quaternion back to Y-up quaternion
         // Apply inverse transformation: rotate around Y-axis
@@ -212,12 +234,13 @@ struct EmitterNode {
     }
 };
 
-class EmitterEditor {
+class EmitterEditor
+{
 public:
     EmitterEditor();
     ~EmitterEditor();
 
-    void addEmitter(const std::string &name = "emitter");
+    void addEmitter(const std::string& name = "emitter");
     void removeEmitter(int index);
     void duplicateEmitter(int index);
     void resetToNew();
@@ -226,14 +249,16 @@ private:
     EmitterNode createDefaultEmitter();
 
 public:
-    void loadFromMDL(const std::string &filename);
-    void saveToMDL(const std::string &filename);
-    void setModelName(const std::string &name);
+    void loadFromMDL(const std::string& filename);
+    void saveToMDL(const std::string& filename);
+    void setModelName(const std::string& name);
 
-    std::vector<EmitterNode> &getEmitters() { return emitters; }
-    const std::vector<EmitterNode> &getEmitters() const { return emitters; }
+    std::vector<EmitterNode>& getEmitters() { return emitters; }
+
+    const std::vector<EmitterNode>& getEmitters() const { return emitters; }
 
     std::string generateMDLText() const;
+
     std::string getTextureDirectory() const { return textureDirectory; }
 
 private:

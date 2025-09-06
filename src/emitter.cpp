@@ -30,10 +30,10 @@ EmitterEditor::EmitterEditor()
 {
 // Initialize texture directory to home directory
 #ifdef _WIN32
-    const char *userProfile = std::getenv("USERPROFILE");
+    const char* userProfile = std::getenv("USERPROFILE");
     textureDirectory = userProfile ? std::string(userProfile) : "C:\\Users\\Public";
 #else
-    const char *home = std::getenv("HOME");
+    const char* home = std::getenv("HOME");
     textureDirectory = home ? std::string(home) : "/";
 #endif
 
@@ -71,7 +71,7 @@ EmitterNode EmitterEditor::createDefaultEmitter()
     return emitter;
 }
 
-void EmitterEditor::addEmitter(const std::string &name)
+void EmitterEditor::addEmitter(const std::string& name)
 {
     EmitterNode emitter = createDefaultEmitter();
     emitter.name = name;
@@ -80,14 +80,16 @@ void EmitterEditor::addEmitter(const std::string &name)
 
 void EmitterEditor::removeEmitter(int index)
 {
-    if (index >= 0 && index < static_cast<int>(emitters.size())) {
+    if (index >= 0 && index < static_cast<int>(emitters.size()))
+    {
         emitters.erase(emitters.begin() + index);
     }
 }
 
 void EmitterEditor::duplicateEmitter(int index)
 {
-    if (index < 0 || index >= static_cast<int>(emitters.size())) {
+    if (index < 0 || index >= static_cast<int>(emitters.size()))
+    {
         return;
     }
 
@@ -100,19 +102,23 @@ void EmitterEditor::duplicateEmitter(int index)
 
     // Check if name already ends with _X pattern
     size_t lastUnderscore = baseName.find_last_of('_');
-    if (lastUnderscore != std::string::npos && lastUnderscore < baseName.length() - 1) {
+    if (lastUnderscore != std::string::npos && lastUnderscore < baseName.length() - 1)
+    {
         std::string suffixStr = baseName.substr(lastUnderscore + 1);
 
         // Check if suffix is purely numeric
         bool isNumeric = true;
-        for (char c: suffixStr) {
-            if (!std::isdigit(c)) {
+        for (char c : suffixStr)
+        {
+            if (!std::isdigit(c))
+            {
                 isNumeric = false;
                 break;
             }
         }
 
-        if (isNumeric && !suffixStr.empty()) {
+        if (isNumeric && !suffixStr.empty())
+        {
             // Extract base name without the _X suffix and start from next number
             baseName = baseName.substr(0, lastUnderscore);
             startingSuffix = std::stoi(suffixStr) + 1;
@@ -123,23 +129,28 @@ void EmitterEditor::duplicateEmitter(int index)
     std::string newName;
     int suffix = startingSuffix;
 
-    do {
+    do
+    {
         newName = baseName + "_" + std::to_string(suffix);
         suffix++;
 
         // Check if this name already exists
         bool nameExists = false;
-        for (const auto &emitter: emitters) {
-            if (emitter.name == newName) {
+        for (const auto& emitter : emitters)
+        {
+            if (emitter.name == newName)
+            {
                 nameExists = true;
                 break;
             }
         }
 
-        if (!nameExists) {
+        if (!nameExists)
+        {
             break;
         }
-    } while (suffix < 1000); // Safety limit
+    }
+    while (suffix < 1000); // Safety limit
 
     duplicate.name = newName;
     emitters.push_back(duplicate);
@@ -152,57 +163,60 @@ void EmitterEditor::resetToNew()
     addEmitter("default_emitter");
 }
 
-void EmitterEditor::setModelName(const std::string &name) { modelName = name; }
+void EmitterEditor::setModelName(const std::string& name) { modelName = name; }
 
 std::string updateTypeToString(UpdateType type)
 {
-    switch (type) {
-        case UpdateType::Fountain:
-            return "Fountain";
-        case UpdateType::Single:
-            return "Single";
-        case UpdateType::Explosion:
-            return "Explosion";
-        case UpdateType::Lightning:
-            return "Lightning";
-        default:
-            return "Fountain";
+    switch (type)
+    {
+    case UpdateType::Fountain:
+        return "Fountain";
+    case UpdateType::Single:
+        return "Single";
+    case UpdateType::Explosion:
+        return "Explosion";
+    case UpdateType::Lightning:
+        return "Lightning";
+    default:
+        return "Fountain";
     }
 }
 
 std::string renderTypeToString(RenderType type)
 {
-    switch (type) {
-        case RenderType::Normal:
-            return "Normal";
-        case RenderType::Linked:
-            return "Linked";
-        case RenderType::Billboard_to_Local_Z:
-            return "Billboard_to_Local_Z";
-        case RenderType::Billboard_to_World_Z:
-            return "Billboard_to_World_Z";
-        case RenderType::Aligned_to_World_Z:
-            return "Aligned_to_World_Z";
-        case RenderType::Aligned_to_Particle_Direction:
-            return "Aligned_to_Particle_Direction";
-        case RenderType::Motion_Blur:
-            return "Motion_Blur";
-        default:
-            return "Normal";
+    switch (type)
+    {
+    case RenderType::Normal:
+        return "Normal";
+    case RenderType::Linked:
+        return "Linked";
+    case RenderType::Billboard_to_Local_Z:
+        return "Billboard_to_Local_Z";
+    case RenderType::Billboard_to_World_Z:
+        return "Billboard_to_World_Z";
+    case RenderType::Aligned_to_World_Z:
+        return "Aligned_to_World_Z";
+    case RenderType::Aligned_to_Particle_Direction:
+        return "Aligned_to_Particle_Direction";
+    case RenderType::Motion_Blur:
+        return "Motion_Blur";
+    default:
+        return "Normal";
     }
 }
 
 std::string blendTypeToString(BlendType type)
 {
-    switch (type) {
-        case BlendType::Normal:
-            return "Normal";
-        case BlendType::Punch_Through:
-            return "Punch-Through";
-        case BlendType::Lighten:
-            return "Lighten";
-        default:
-            return "Normal";
+    switch (type)
+    {
+    case BlendType::Normal:
+        return "Normal";
+    case BlendType::Punch_Through:
+        return "Punch-Through";
+    case BlendType::Lighten:
+        return "Lighten";
+    default:
+        return "Normal";
     }
 }
 
@@ -225,7 +239,8 @@ std::string EmitterEditor::generateMDLText() const
     ss << "endnode\n";
 
     // Emitter nodes
-    for (const auto &emitter: emitters) {
+    for (const auto& emitter : emitters)
+    {
         ss << "node emitter " << emitter.name << "\n";
         ss << "  parent " << modelName << "\n";
         ss << "  p2p " << (emitter.p2p ? 1 : 0) << "\n";
@@ -245,7 +260,8 @@ std::string EmitterEditor::generateMDLText() const
         ss << "  render " << renderTypeToString(emitter.render) << "\n";
         ss << "  blend " << blendTypeToString(emitter.blend) << "\n";
 
-        if (!emitter.texture.empty()) {
+        if (!emitter.texture.empty())
+        {
             ss << "  texture " << emitter.texture << "\n";
         }
 
@@ -266,17 +282,21 @@ std::string EmitterEditor::generateMDLText() const
         glm::quat quat = glm::quat(glm::radians(emitter.rotationAngles));
         float angle = glm::angle(quat);
 
-        if (angle < 0.001f) {
+        if (angle < 0.001f)
+        {
             // No rotation
             ss << "  orientation 0.0 0.0 1.0 0.0\n";
-        } else {
+        }
+        else
+        {
             // Get normalized axis from quaternion
             glm::vec3 axis = glm::axis(quat);
             // Save as X Z Y (our Z is up), angle already in radians
             ss << "  orientation " << axis.x << " " << axis.y << " " << axis.z << " " << angle << "\n";
         }
 
-        if (emitter.xsize > 0 || emitter.ysize > 0) {
+        if (emitter.xsize > 0 || emitter.ysize > 0)
+        {
             ss << "  xsize " << (emitter.xsize * 100.0f) << "\n";
             ss << "  ysize " << (emitter.ysize * 100.0f) << "\n";
         }
@@ -338,10 +358,11 @@ std::string EmitterEditor::generateMDLText() const
     return ss.str();
 }
 
-void EmitterEditor::loadFromMDL(const std::string &filename)
+void EmitterEditor::loadFromMDL(const std::string& filename)
 {
     std::ifstream file(filename);
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         std::cerr << "Failed to open file: " << filename << std::endl;
         return;
     }
@@ -352,27 +373,33 @@ void EmitterEditor::loadFromMDL(const std::string &filename)
     emitters.clear();
 
     std::string line;
-    EmitterNode *currentEmitter = nullptr;
+    EmitterNode* currentEmitter = nullptr;
 
-    while (std::getline(file, line)) {
+    while (std::getline(file, line))
+    {
         std::stringstream ss(line);
         std::string token;
         ss >> token;
 
-        if (token == "node") {
+        if (token == "node")
+        {
             std::string nodeType;
             ss >> nodeType;
-            if (nodeType == "emitter") {
+            if (nodeType == "emitter")
+            {
                 std::string name;
                 ss >> name;
 
                 // Check if this emitter already exists (animation keyframes)
                 auto existingIt = std::find_if(emitters.begin(), emitters.end(),
-                                               [&name](const EmitterNode &emitter) { return emitter.name == name; });
+                                               [&name](const EmitterNode& emitter) { return emitter.name == name; });
 
-                if (existingIt != emitters.end()) {
+                if (existingIt != emitters.end())
+                {
                     currentEmitter = &(*existingIt); // Parse animation data for existing emitter
-                } else {
+                }
+                else
+                {
                     // Create a fresh emitter with defaults, then we'll parse its properties
                     EmitterNode emitter = createDefaultEmitter();
                     emitter.name = name;
@@ -380,61 +407,94 @@ void EmitterEditor::loadFromMDL(const std::string &filename)
                     currentEmitter = &emitters.back();
                 }
             }
-        } else if (currentEmitter && token == "endnode") {
+        }
+        else if (currentEmitter && token == "endnode")
+        {
             currentEmitter = nullptr;
-        } else if (currentEmitter) {
+        }
+        else if (currentEmitter)
+        {
             // Parse emitter properties
-            if (token == "parent") {
+            if (token == "parent")
+            {
                 ss >> currentEmitter->parent;
-            } else if (token == "p2p") {
+            }
+            else if (token == "p2p")
+            {
                 int val;
                 ss >> val;
                 currentEmitter->p2p = (val != 0);
-            } else if (token == "p2p_sel") {
+            }
+            else if (token == "p2p_sel")
+            {
                 ss >> currentEmitter->p2p_sel;
-            } else if (token == "affectedByWind") {
+            }
+            else if (token == "affectedByWind")
+            {
                 int val;
                 ss >> val;
                 currentEmitter->affectedByWind = (val != 0);
-            } else if (token == "m_isTinted") {
+            }
+            else if (token == "m_isTinted")
+            {
                 int val;
                 ss >> val;
                 currentEmitter->m_isTinted = (val != 0);
-            } else if (token == "bounce") {
+            }
+            else if (token == "bounce")
+            {
                 int val;
                 ss >> val;
                 currentEmitter->bounce = (val != 0);
-            } else if (token == "random") {
+            }
+            else if (token == "random")
+            {
                 int val;
                 ss >> val;
                 currentEmitter->random = (val != 0);
-            } else if (token == "inherit") {
+            }
+            else if (token == "inherit")
+            {
                 int val;
                 ss >> val;
                 currentEmitter->inherit = (val != 0);
-            } else if (token == "inheritvel") {
+            }
+            else if (token == "inheritvel")
+            {
                 int val;
                 ss >> val;
                 currentEmitter->inheritvel = (val != 0);
-            } else if (token == "inherit_local") {
+            }
+            else if (token == "inherit_local")
+            {
                 int val;
                 ss >> val;
                 currentEmitter->inherit_local = (val != 0);
-            } else if (token == "splat") {
+            }
+            else if (token == "splat")
+            {
                 int val;
                 ss >> val;
                 currentEmitter->splat = (val != 0);
-            } else if (token == "inherit_part") {
+            }
+            else if (token == "inherit_part")
+            {
                 int val;
                 ss >> val;
                 currentEmitter->inherit_part = (val != 0);
-            } else if (token == "renderorder") {
+            }
+            else if (token == "renderorder")
+            {
                 ss >> currentEmitter->renderorder;
-            } else if (token == "spawntype") {
+            }
+            else if (token == "spawntype")
+            {
                 int val;
                 ss >> val;
                 currentEmitter->spawntype = static_cast<SpawnType>(val);
-            } else if (token == "update") {
+            }
+            else if (token == "update")
+            {
                 std::string updateStr;
                 ss >> updateStr;
                 if (updateStr == "Fountain")
@@ -445,7 +505,9 @@ void EmitterEditor::loadFromMDL(const std::string &filename)
                     currentEmitter->update = UpdateType::Explosion;
                 else if (updateStr == "Lightning")
                     currentEmitter->update = UpdateType::Lightning;
-            } else if (token == "render") {
+            }
+            else if (token == "render")
+            {
                 std::string renderStr;
                 ss >> renderStr;
                 if (renderStr == "Normal")
@@ -462,7 +524,9 @@ void EmitterEditor::loadFromMDL(const std::string &filename)
                     currentEmitter->render = RenderType::Aligned_to_Particle_Direction;
                 else if (renderStr == "Motion_Blur")
                     currentEmitter->render = RenderType::Motion_Blur;
-            } else if (token == "blend") {
+            }
+            else if (token == "blend")
+            {
                 std::string blendStr;
                 ss >> blendStr;
                 if (blendStr == "Normal")
@@ -471,115 +535,202 @@ void EmitterEditor::loadFromMDL(const std::string &filename)
                     currentEmitter->blend = BlendType::Punch_Through;
                 else if (blendStr == "Lighten")
                     currentEmitter->blend = BlendType::Lighten;
-            } else if (token == "texture") {
+            }
+            else if (token == "texture")
+            {
                 ss >> currentEmitter->texture;
-            } else if (token == "xgrid") {
+            }
+            else if (token == "xgrid")
+            {
                 ss >> currentEmitter->xgrid;
-            } else if (token == "ygrid") {
+            }
+            else if (token == "ygrid")
+            {
                 ss >> currentEmitter->ygrid;
-            } else if (token == "loop") {
+            }
+            else if (token == "loop")
+            {
                 int val;
                 ss >> val;
                 currentEmitter->loop = (val != 0);
-            } else if (token == "deadspace") {
+            }
+            else if (token == "deadspace")
+            {
                 ss >> currentEmitter->deadspace;
-            } else if (token == "twosidedtex") {
+            }
+            else if (token == "twosidedtex")
+            {
                 int val;
                 ss >> val;
                 currentEmitter->twosidedtex = (val != 0);
-            } else if (token == "blastRadius") {
+            }
+            else if (token == "blastRadius")
+            {
                 ss >> currentEmitter->blastRadius;
-            } else if (token == "blastLength") {
+            }
+            else if (token == "blastLength")
+            {
                 ss >> currentEmitter->blastLength;
-            } else if (token == "position") {
+            }
+            else if (token == "position")
+            {
                 glm::vec3 mdlPos;
                 ss >> mdlPos.x >> mdlPos.y >> mdlPos.z;
                 currentEmitter->position = mdlPos;
-            } else if (token == "orientation") {
+            }
+            else if (token == "orientation")
+            {
                 float x, y, z, angle;
                 ss >> x >> y >> z >> angle;
 
-                if (angle < 0.001f) {
+                if (angle < 0.001f)
+                {
                     // No rotation
                     currentEmitter->rotationAngles = glm::vec3(0.0f);
-                } else {
+                }
+                else
+                {
                     // Convert axis-angle to quaternion, then to euler angles for storage
                     glm::vec3 axis(x, y, z);
                     glm::quat quat = glm::angleAxis(angle, glm::normalize(axis));
                     currentEmitter->rotationAngles = glm::degrees(glm::eulerAngles(quat));
                 }
-            } else if (token == "xsize") {
+            }
+            else if (token == "xsize")
+            {
                 float mdlValue;
                 ss >> mdlValue;
                 currentEmitter->xsize = mdlValue / 100.0f;
-            } else if (token == "ysize") {
+            }
+            else if (token == "ysize")
+            {
                 float mdlValue;
                 ss >> mdlValue;
                 currentEmitter->ysize = mdlValue / 100.0f;
-            } else if (token == "colorStart") {
+            }
+            else if (token == "colorStart")
+            {
                 ss >> currentEmitter->colorStart.r >> currentEmitter->colorStart.g >> currentEmitter->colorStart.b;
-            } else if (token == "colorEnd") {
+            }
+            else if (token == "colorEnd")
+            {
                 ss >> currentEmitter->colorEnd.r >> currentEmitter->colorEnd.g >> currentEmitter->colorEnd.b;
-            } else if (token == "alphaStart") {
+            }
+            else if (token == "alphaStart")
+            {
                 ss >> currentEmitter->alphaStart;
-            } else if (token == "alphaEnd") {
+            }
+            else if (token == "alphaEnd")
+            {
                 ss >> currentEmitter->alphaEnd;
-            } else if (token == "sizeStart") {
+            }
+            else if (token == "sizeStart")
+            {
                 ss >> currentEmitter->sizeStart;
-            } else if (token == "sizeEnd") {
+            }
+            else if (token == "sizeEnd")
+            {
                 ss >> currentEmitter->sizeEnd;
-            } else if (token == "sizeStart_y") {
+            }
+            else if (token == "sizeStart_y")
+            {
                 ss >> currentEmitter->sizeStart_y;
-            } else if (token == "sizeEnd_y") {
+            }
+            else if (token == "sizeEnd_y")
+            {
                 ss >> currentEmitter->sizeEnd_y;
-            } else if (token == "birthrate") {
+            }
+            else if (token == "birthrate")
+            {
                 ss >> currentEmitter->birthrate;
-            } else if (token == "lifeExp") {
+            }
+            else if (token == "lifeExp")
+            {
                 ss >> currentEmitter->lifeExp;
-            } else if (token == "mass") {
+            }
+            else if (token == "mass")
+            {
                 ss >> currentEmitter->mass;
-            } else if (token == "spread") {
+            }
+            else if (token == "spread")
+            {
                 ss >> currentEmitter->spread;
-            } else if (token == "particleRot") {
+            }
+            else if (token == "particleRot")
+            {
                 ss >> currentEmitter->particleRot;
-            } else if (token == "velocity") {
+            }
+            else if (token == "velocity")
+            {
                 ss >> currentEmitter->velocity;
-            } else if (token == "grav") {
+            }
+            else if (token == "grav")
+            {
                 ss >> currentEmitter->grav;
-            } else if (token == "drag") {
+            }
+            else if (token == "drag")
+            {
                 ss >> currentEmitter->drag;
-            } else if (token == "threshold") {
+            }
+            else if (token == "threshold")
+            {
                 ss >> currentEmitter->threshold;
-            } else if (token == "fps") {
+            }
+            else if (token == "fps")
+            {
                 ss >> currentEmitter->fps;
-            } else if (token == "frameStart") {
+            }
+            else if (token == "frameStart")
+            {
                 ss >> currentEmitter->frameStart;
-            } else if (token == "frameEnd") {
+            }
+            else if (token == "frameEnd")
+            {
                 ss >> currentEmitter->frameEnd;
-            } else if (token == "bounce_co") {
+            }
+            else if (token == "bounce_co")
+            {
                 ss >> currentEmitter->bounce_co;
-            } else if (token == "combinetime") {
+            }
+            else if (token == "combinetime")
+            {
                 ss >> currentEmitter->combinetime;
-            } else if (token == "blurlength") {
+            }
+            else if (token == "blurlength")
+            {
                 ss >> currentEmitter->blurlength;
-            } else if (token == "lightningDelay") {
+            }
+            else if (token == "lightningDelay")
+            {
                 ss >> currentEmitter->lightningDelay;
-            } else if (token == "lightningRadius") {
+            }
+            else if (token == "lightningRadius")
+            {
                 ss >> currentEmitter->lightningRadius;
-            } else if (token == "lightningScale") {
+            }
+            else if (token == "lightningScale")
+            {
                 ss >> currentEmitter->lightningScale;
-            } else if (token == "lightningSubDiv") {
+            }
+            else if (token == "lightningSubDiv")
+            {
                 ss >> currentEmitter->lightningSubDiv;
-            } else if (token == "lightningZigZag") {
+            }
+            else if (token == "lightningZigZag")
+            {
                 ss >> currentEmitter->lightningZigZag;
-            } else if (token == "positionkey") {
+            }
+            else if (token == "positionkey")
+            {
                 // Parse position animation keyframes
                 int numKeys;
                 ss >> numKeys;
                 currentEmitter->positionKeys.keyframes.clear();
 
-                for (int i = 0; i < numKeys; ++i) {
-                    if (std::getline(file, line)) {
+                for (int i = 0; i < numKeys; ++i)
+                {
+                    if (std::getline(file, line))
+                    {
                         std::stringstream keyss(line);
                         float time, x, y, z;
                         keyss >> time >> x >> y >> z;
@@ -587,14 +738,18 @@ void EmitterEditor::loadFromMDL(const std::string &filename)
                         currentEmitter->positionKeys.keyframes.emplace_back(time, mdlPos);
                     }
                 }
-            } else if (token == "orientationkey") {
+            }
+            else if (token == "orientationkey")
+            {
                 // Parse orientation animation keyframes
                 int numKeys;
                 ss >> numKeys;
                 currentEmitter->orientationKeys.keyframes.clear();
 
-                for (int i = 0; i < numKeys; ++i) {
-                    if (std::getline(file, line)) {
+                for (int i = 0; i < numKeys; ++i)
+                {
+                    if (std::getline(file, line))
+                    {
                         std::stringstream keyss(line);
                         float time, x, y, z, w;
                         keyss >> time >> x >> y >> z >> w;
@@ -606,10 +761,11 @@ void EmitterEditor::loadFromMDL(const std::string &filename)
     }
 }
 
-void EmitterEditor::saveToMDL(const std::string &filename)
+void EmitterEditor::saveToMDL(const std::string& filename)
 {
     std::ofstream file(filename);
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         std::cerr << "Failed to create file: " << filename << std::endl;
         return;
     }

@@ -71,9 +71,9 @@ struct DDSHeader
 
 static void rgb565_to_rgb888(uint16_t color565, uint8_t* rgb)
 {
-    rgb[0] = ((color565 >> 11) & 0x1F) << 3;// Red: 5 bits -> 8 bits
+    rgb[0] = ((color565 >> 11) & 0x1F) << 3; // Red: 5 bits -> 8 bits
     rgb[1] = ((color565 >> 5) & 0x3F) << 2; // Green: 6 bits -> 8 bits
-    rgb[2] = (color565 & 0x1F) << 3;        // Blue: 5 bits -> 8 bits
+    rgb[2] = (color565 & 0x1F) << 3; // Blue: 5 bits -> 8 bits
 }
 
 static void decompress_dxt1_block(const uint8_t* block, uint8_t* output, int width, int channels)
@@ -98,14 +98,15 @@ static void decompress_dxt1_block(const uint8_t* block, uint8_t* output, int wid
         colors[3][0] = (colors[0][0] + 2 * colors[1][0]) / 3;
         colors[3][1] = (colors[0][1] + 2 * colors[1][1]) / 3;
         colors[3][2] = (colors[0][2] + 2 * colors[1][2]) / 3;
-    } else
+    }
+    else
     {
         // 3-color mode with transparent black
         colors[2][0] = (colors[0][0] + colors[1][0]) / 2;
         colors[2][1] = (colors[0][1] + colors[1][1]) / 2;
         colors[2][2] = (colors[0][2] + colors[1][2]) / 2;
 
-        colors[3][0] = colors[3][1] = colors[3][2] = 0;// Transparent black
+        colors[3][0] = colors[3][1] = colors[3][2] = 0; // Transparent black
     }
 
     // Read color indices (2 bits per pixel)
@@ -121,12 +122,12 @@ static void decompress_dxt1_block(const uint8_t* block, uint8_t* output, int wid
             int outputIndex = (y * width + x) * channels;
             if (outputIndex >= 0)
             {
-                output[outputIndex + 0] = colors[colorIndex][0];// R
-                output[outputIndex + 1] = colors[colorIndex][1];// G
-                output[outputIndex + 2] = colors[colorIndex][2];// B
+                output[outputIndex + 0] = colors[colorIndex][0]; // R
+                output[outputIndex + 1] = colors[colorIndex][1]; // G
+                output[outputIndex + 2] = colors[colorIndex][2]; // B
                 if (channels == 4)
                 {
-                    output[outputIndex + 3] = (color0 > color1 || colorIndex < 3) ? 255 : 0;// A
+                    output[outputIndex + 3] = (color0 > color1 || colorIndex < 3) ? 255 : 0; // A
                 }
             }
         }
@@ -160,15 +161,16 @@ static void decompress_dxt5_block(const uint8_t* block, uint8_t* output, int wid
         {
             alphas[i + 1] = ((7 - i) * alpha0 + i * alpha1) / 7;
         }
-    } else
+    }
+    else
     {
         // 6-alpha mode + transparent endpoints
         for (int i = 1; i < 5; ++i)
         {
             alphas[i + 1] = ((5 - i) * alpha0 + i * alpha1) / 5;
         }
-        alphas[6] = 0;  // Transparent
-        alphas[7] = 255;// Opaque
+        alphas[6] = 0; // Transparent
+        alphas[7] = 255; // Opaque
     }
 
     // Read color data (last 8 bytes)
@@ -191,8 +193,7 @@ static void decompress_dxt5_block(const uint8_t* block, uint8_t* output, int wid
     colors[3][2] = (colors[0][2] + 2 * colors[1][2]) / 3;
 
     // Read color indices
-    uint32_t colorIndices =
-        colorBlock[4] | (colorBlock[5] << 8) | (colorBlock[6] << 16) | (colorBlock[7] << 24);
+    uint32_t colorIndices = colorBlock[4] | (colorBlock[5] << 8) | (colorBlock[6] << 16) | (colorBlock[7] << 24);
 
     for (int y = 0; y < 4; ++y)
     {
@@ -210,10 +211,10 @@ static void decompress_dxt5_block(const uint8_t* block, uint8_t* output, int wid
             int outputIndex = (y * width + x) * 4;
             if (outputIndex >= 0)
             {
-                output[outputIndex + 0] = colors[colorIndex][0];// R
-                output[outputIndex + 1] = colors[colorIndex][1];// G
-                output[outputIndex + 2] = colors[colorIndex][2];// B
-                output[outputIndex + 3] = alpha;                // A
+                output[outputIndex + 0] = colors[colorIndex][0]; // R
+                output[outputIndex + 1] = colors[colorIndex][1]; // G
+                output[outputIndex + 2] = colors[colorIndex][2]; // B
+                output[outputIndex + 3] = alpha; // A
             }
         }
     }
@@ -250,8 +251,7 @@ static void decompress_dxt3_block(const uint8_t* block, uint8_t* output, int wid
     colors[3][2] = (colors[0][2] + 2 * colors[1][2]) / 3;
 
     // Read color indices
-    uint32_t colorIndices =
-        colorBlock[4] | (colorBlock[5] << 8) | (colorBlock[6] << 16) | (colorBlock[7] << 24);
+    uint32_t colorIndices = colorBlock[4] | (colorBlock[5] << 8) | (colorBlock[6] << 16) | (colorBlock[7] << 24);
 
     for (int y = 0; y < 4; ++y)
     {
@@ -261,7 +261,7 @@ static void decompress_dxt3_block(const uint8_t* block, uint8_t* output, int wid
 
             // Extract alpha (4 bits)
             int alphaIndex = pixelIndex * 4;
-            uint8_t alpha = ((alphaData >> alphaIndex) & 0xF) * 17;// Scale 4-bit to 8-bit
+            uint8_t alpha = ((alphaData >> alphaIndex) & 0xF) * 17; // Scale 4-bit to 8-bit
 
             // Extract color (2 bits)
             int colorIndex = (colorIndices >> (pixelIndex * 2)) & 0x3;
@@ -269,10 +269,10 @@ static void decompress_dxt3_block(const uint8_t* block, uint8_t* output, int wid
             int outputIndex = (y * width + x) * 4;
             if (outputIndex >= 0)
             {
-                output[outputIndex + 0] = colors[colorIndex][0];// R
-                output[outputIndex + 1] = colors[colorIndex][1];// G
-                output[outputIndex + 2] = colors[colorIndex][2];// B
-                output[outputIndex + 3] = alpha;                // A
+                output[outputIndex + 0] = colors[colorIndex][0]; // R
+                output[outputIndex + 1] = colors[colorIndex][1]; // G
+                output[outputIndex + 2] = colors[colorIndex][2]; // B
+                output[outputIndex + 3] = alpha; // A
             }
         }
     }
@@ -287,7 +287,7 @@ static int is_bioware_dds(const uint8_t* data, int len)
     uint32_t magic = data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
     if (magic == DDS_MAGIC)
     {
-        return 0;// Standard DDS file
+        return 0; // Standard DDS file
     }
 
     // For Bioware DDS, the first 4 bytes should be width (power of 2, reasonable size)
@@ -296,7 +296,7 @@ static int is_bioware_dds(const uint8_t* data, int len)
     // Check if it's a reasonable texture size (power of 2, between 1 and 4096)
     if (possibleWidth > 0 && possibleWidth <= 4096 && (possibleWidth & (possibleWidth - 1)) == 0)
     {
-        return 1;// Likely Bioware DDS
+        return 1; // Likely Bioware DDS
     }
 
     return 0;
@@ -332,12 +332,12 @@ int stbi_dds_test(char const* filename)
     return stbi_dds_test_memory(header, sizeof(header));
 }
 
-unsigned char* stbi_load_dds_from_memory(unsigned char const* buffer, int len, int* x, int* y,
-                                         int* channels_in_file, int desired_channels)
+unsigned char* stbi_load_dds_from_memory(unsigned char const* buffer, int len, int* x, int* y, int* channels_in_file,
+                                         int desired_channels)
 {
     if (!stbi_dds_test_memory(buffer, len))
     {
-        return nullptr;// Not a DDS file
+        return nullptr; // Not a DDS file
     }
 
     const uint8_t* data = buffer;
@@ -357,7 +357,7 @@ unsigned char* stbi_load_dds_from_memory(unsigned char const* buffer, int len, i
         *channels_in_file = (header.channels == 3) ? 3 : 4;
 
         int output_channels = desired_channels ? desired_channels : *channels_in_file;
-        unsigned char* result = (unsigned char*) malloc(*x * *y * output_channels);
+        unsigned char* result = (unsigned char*)malloc(*x * *y * output_channels);
         if (!result)
             return nullptr;
 
@@ -380,7 +380,8 @@ unsigned char* stbi_load_dds_from_memory(unsigned char const* buffer, int len, i
                 if (header.channels == 3)
                 {
                     decompress_dxt1_block(blockData, outputPtr, *x, output_channels);
-                } else
+                }
+                else
                 {
                     decompress_dxt5_block(blockData, outputPtr, *x);
                 }
@@ -388,7 +389,8 @@ unsigned char* stbi_load_dds_from_memory(unsigned char const* buffer, int len, i
         }
 
         return result;
-    } else
+    }
+    else
     {
         // Load Standard DDS
         if (len < 4 + sizeof(DDSHeader))
@@ -436,7 +438,8 @@ unsigned char* stbi_load_dds_from_memory(unsigned char const* buffer, int len, i
             }
 
             return result;
-        } else if (header.ddspf.fourCC == FOURCC_DXT3)
+        }
+        else if (header.ddspf.fourCC == FOURCC_DXT3)
         {
             *channels_in_file = 4;
             output_channels = desired_channels ? desired_channels : 4;
@@ -464,7 +467,8 @@ unsigned char* stbi_load_dds_from_memory(unsigned char const* buffer, int len, i
             }
 
             return result;
-        } else if (header.ddspf.fourCC == FOURCC_DXT5)
+        }
+        else if (header.ddspf.fourCC == FOURCC_DXT5)
         {
             *channels_in_file = 4;
             output_channels = desired_channels ? desired_channels : 4;
@@ -495,11 +499,10 @@ unsigned char* stbi_load_dds_from_memory(unsigned char const* buffer, int len, i
         }
     }
 
-    return nullptr;// Unsupported format
+    return nullptr; // Unsupported format
 }
 
-unsigned char* stbi_load_dds(char const* filename, int* x, int* y, int* channels_in_file,
-                             int desired_channels)
+unsigned char* stbi_load_dds(char const* filename, int* x, int* y, int* channels_in_file, int desired_channels)
 {
     FILE* f = fopen(filename, "rb");
     if (!f)
@@ -534,8 +537,7 @@ unsigned char* stbi_load_dds(char const* filename, int* x, int* y, int* channels
     }
 
     // Load from memory
-    unsigned char* result =
-        stbi_load_dds_from_memory(buffer, file_size, x, y, channels_in_file, desired_channels);
+    unsigned char* result = stbi_load_dds_from_memory(buffer, file_size, x, y, channels_in_file, desired_channels);
     free(buffer);
 
     return result;

@@ -17,19 +17,19 @@
  */
 
 #include "particle_system.hpp"
-#include "stb_dds.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <iostream>
+#include <limits>
 #include <unordered_map>
+#include "stb_dds.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 // Vertex attribute layout constants
-constexpr int VERTEX_STRIDE =
-    14;// position(3) + texcoord(2) + color(4) + size(1) + velocity(3) + age(1)
+constexpr int VERTEX_STRIDE = 14; // position(3) + texcoord(2) + color(4) + size(1) + velocity(3) + age(1)
 
 const char* vertexShaderCode = R"(
 #version 410 core
@@ -199,19 +199,15 @@ void main() {
 }
 )";
 
-ParticleRenderer::ParticleRenderer()
-    : shaderProgram(0), VAO(0), VBO(0), lineShaderProgram(0), lineVAO(0), lineVBO(0),
-      framebuffer(0), colorTexture(0), depthBuffer(0), fbWidth(0), fbHeight(0), viewMatrix(1.0f),
-      projectionMatrix(1.0f), globalAnimationTime(0.0f), vertexShaderSource(vertexShaderCode),
-      fragmentShaderSource(fragmentShaderCode), lineVertexShaderSource(lineVertexShaderCode),
-      lineFragmentShaderSource(lineFragmentShaderCode)
+ParticleRenderer::ParticleRenderer() :
+    shaderProgram(0), VAO(0), VBO(0), lineShaderProgram(0), lineVAO(0), lineVBO(0), framebuffer(0), colorTexture(0),
+    depthBuffer(0), fbWidth(0), fbHeight(0), viewMatrix(1.0f), projectionMatrix(1.0f), globalAnimationTime(0.0f),
+    vertexShaderSource(vertexShaderCode), fragmentShaderSource(fragmentShaderCode),
+    lineVertexShaderSource(lineVertexShaderCode), lineFragmentShaderSource(lineFragmentShaderCode)
 {
 }
 
-ParticleRenderer::~ParticleRenderer()
-{
-    cleanup();
-}
+ParticleRenderer::~ParticleRenderer() { cleanup(); }
 
 void ParticleRenderer::initialize()
 {
@@ -266,7 +262,7 @@ void ParticleRenderer::cleanup()
         lineVBO = 0;
     }
 
-    for (GLuint texture: textures)
+    for (GLuint texture : textures)
     {
         glDeleteTextures(1, &texture);
     }
@@ -374,36 +370,30 @@ void ParticleRenderer::setupBuffers()
 
     // Each particle vertex: position(3) + texcoord(2) + color(4) + size(1) + velocity(3) + age(1) = 14 floats
     // 6 vertices per particle (2 triangles), VERTEX_STRIDE floats per vertex
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * VERTEX_STRIDE * 6 * 1000, nullptr,
-                 GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * VERTEX_STRIDE * 6 * 100000, nullptr, GL_DYNAMIC_DRAW);
 
     // Position
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_STRIDE * sizeof(float), (void*) 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_STRIDE * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     // Texture coordinates
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, VERTEX_STRIDE * sizeof(float),
-                          (void*) (3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, VERTEX_STRIDE * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     // Color
-    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_STRIDE * sizeof(float),
-                          (void*) (5 * sizeof(float)));
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, VERTEX_STRIDE * sizeof(float), (void*)(5 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
     // Size
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, VERTEX_STRIDE * sizeof(float),
-                          (void*) (9 * sizeof(float)));
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, VERTEX_STRIDE * sizeof(float), (void*)(9 * sizeof(float)));
     glEnableVertexAttribArray(3);
 
     // Velocity
-    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, VERTEX_STRIDE * sizeof(float),
-                          (void*) (10 * sizeof(float)));
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, VERTEX_STRIDE * sizeof(float), (void*)(10 * sizeof(float)));
     glEnableVertexAttribArray(4);
 
     // Age
-    glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, VERTEX_STRIDE * sizeof(float),
-                          (void*) (13 * sizeof(float)));
+    glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, VERTEX_STRIDE * sizeof(float), (void*)(13 * sizeof(float)));
     glEnableVertexAttribArray(5);
 
     glBindVertexArray(0);
@@ -421,7 +411,7 @@ void ParticleRenderer::setupLineBuffers()
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * 100, nullptr, GL_DYNAMIC_DRAW);
 
     // Position
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);
@@ -433,8 +423,8 @@ void ParticleRenderer::setCamera(const glm::mat4& view, const glm::mat4& project
     projectionMatrix = projection;
 }
 
-void ParticleRenderer::render(const std::vector<EmitterNode>& emitters, float deltaTime,
-                              int viewportWidth, int viewportHeight, int selectedEmitter)
+void ParticleRenderer::render(const std::vector<EmitterNode>& emitters, float deltaTime, int viewportWidth,
+                              int viewportHeight, int selectedEmitter)
 {
     // Resize state vector if needed
     while (emitterStates.size() < emitters.size())
@@ -465,13 +455,12 @@ void ParticleRenderer::render(const std::vector<EmitterNode>& emitters, float de
     renderNodes(emitters, selectedEmitter);
 }
 
-void ParticleRenderer::updateParticles(const EmitterNode& emitter, ParticleSystemState& state,
-                                       float deltaTime)
+void ParticleRenderer::updateParticles(const EmitterNode& emitter, ParticleSystemState& state, float deltaTime)
 {
     // Update animation time
     state.animationTime += deltaTime;
     // Update existing particles
-    for (auto& particle: state.particles)
+    for (auto& particle : state.particles)
     {
         if (particle.active)
         {
@@ -523,7 +512,7 @@ void ParticleRenderer::spawnParticle(const EmitterNode& emitter, ParticleSystemS
 {
     // Find inactive particle or add new one
     Particle* particle = nullptr;
-    for (auto& p: state.particles)
+    for (auto& p : state.particles)
     {
         if (!p.active)
         {
@@ -539,7 +528,7 @@ void ParticleRenderer::spawnParticle(const EmitterNode& emitter, ParticleSystemS
     }
 
     if (!particle)
-        return;// No available particle slots
+        return; // No available particle slots
 
     // Initialize particle
     particle->active = true;
@@ -562,8 +551,8 @@ void ParticleRenderer::spawnParticle(const EmitterNode& emitter, ParticleSystemS
     std::uniform_real_distribution<float> azimuthDist(0.0f, 360.0f);
     std::uniform_real_distribution<float> velocityVar(0.8f, 1.2f);
 
-    float spreadAngle = glm::radians(spreadDist(state.rng));// Cone angle from center
-    float azimuth = glm::radians(azimuthDist(state.rng));   // Random rotation around cone axis
+    float spreadAngle = glm::radians(spreadDist(state.rng)); // Cone angle from center
+    float azimuth = glm::radians(azimuthDist(state.rng)); // Random rotation around cone axis
     float speed = emitter.velocity * velocityVar(state.rng);
 
     // Generate velocity in 3D cone around Z-axis
@@ -613,8 +602,7 @@ void ParticleRenderer::renderParticles(const EmitterNode& emitter, const Particl
                 emitter.frameEnd > 0 ? emitter.frameEnd : emitter.xgrid * emitter.ygrid - 1);
 
     // Bind texture if available
-    GLuint texture =
-        getTexture(emitter.texturePath.empty() ? emitter.texture : emitter.texturePath);
+    GLuint texture = getTexture(emitter.texturePath.empty() ? emitter.texture : emitter.texturePath);
     bool hasTexture = (texture != 0 && (!emitter.texturePath.empty() || !emitter.texture.empty()));
     glUniform1i(hasTextureLoc, hasTexture ? 1 : 0);
 
@@ -628,21 +616,21 @@ void ParticleRenderer::renderParticles(const EmitterNode& emitter, const Particl
     // Set blend mode specific to particles
     switch (emitter.blend)
     {
-        case BlendType::Normal:
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            break;
-        case BlendType::Lighten:
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-            break;
-        case BlendType::Punch_Through:
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            break;
+    case BlendType::Normal:
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        break;
+    case BlendType::Lighten:
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        break;
+    case BlendType::Punch_Through:
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        break;
     }
 
     // Prepare vertex data
     std::vector<float> vertexData;
 
-    for (const auto& particle: state.particles)
+    for (const auto& particle : state.particles)
     {
         if (!particle.active)
             continue;
@@ -652,42 +640,36 @@ void ParticleRenderer::renderParticles(const EmitterNode& emitter, const Particl
         float age = particle.getAge();
 
         // Triangle 1
-        vertexData.insert(
-            vertexData.end(),
-            {
-                particle.position.x, particle.position.y, particle.position.z,         // center pos
-                0.0f, 0.0f,                                                            // texcoord
-                particle.color.r, particle.color.g, particle.color.b, particle.color.a,// color
-                particle.size,                                                         // size
-                particle.velocity.x, particle.velocity.y, particle.velocity.z,         // velocity
-                age// particle age
-            });
         vertexData.insert(vertexData.end(),
-                          {particle.position.x, particle.position.y, particle.position.z, 1.0f,
-                           0.0f, particle.color.r, particle.color.g, particle.color.b,
-                           particle.color.a, particle.size, particle.velocity.x,
+                          {
+                              particle.position.x, particle.position.y, particle.position.z, // center pos
+                              0.0f, 0.0f, // texcoord
+                              particle.color.r, particle.color.g, particle.color.b, particle.color.a, // color
+                              particle.size, // size
+                              particle.velocity.x, particle.velocity.y, particle.velocity.z, // velocity
+                              age // particle age
+                          });
+        vertexData.insert(vertexData.end(),
+                          {particle.position.x, particle.position.y, particle.position.z, 1.0f, 0.0f, particle.color.r,
+                           particle.color.g, particle.color.b, particle.color.a, particle.size, particle.velocity.x,
                            particle.velocity.y, particle.velocity.z, age});
         vertexData.insert(vertexData.end(),
-                          {particle.position.x, particle.position.y, particle.position.z, 1.0f,
-                           1.0f, particle.color.r, particle.color.g, particle.color.b,
-                           particle.color.a, particle.size, particle.velocity.x,
+                          {particle.position.x, particle.position.y, particle.position.z, 1.0f, 1.0f, particle.color.r,
+                           particle.color.g, particle.color.b, particle.color.a, particle.size, particle.velocity.x,
                            particle.velocity.y, particle.velocity.z, age});
 
         // Triangle 2
         vertexData.insert(vertexData.end(),
-                          {particle.position.x, particle.position.y, particle.position.z, 0.0f,
-                           0.0f, particle.color.r, particle.color.g, particle.color.b,
-                           particle.color.a, particle.size, particle.velocity.x,
+                          {particle.position.x, particle.position.y, particle.position.z, 0.0f, 0.0f, particle.color.r,
+                           particle.color.g, particle.color.b, particle.color.a, particle.size, particle.velocity.x,
                            particle.velocity.y, particle.velocity.z, age});
         vertexData.insert(vertexData.end(),
-                          {particle.position.x, particle.position.y, particle.position.z, 1.0f,
-                           1.0f, particle.color.r, particle.color.g, particle.color.b,
-                           particle.color.a, particle.size, particle.velocity.x,
+                          {particle.position.x, particle.position.y, particle.position.z, 1.0f, 1.0f, particle.color.r,
+                           particle.color.g, particle.color.b, particle.color.a, particle.size, particle.velocity.x,
                            particle.velocity.y, particle.velocity.z, age});
         vertexData.insert(vertexData.end(),
-                          {particle.position.x, particle.position.y, particle.position.z, 0.0f,
-                           1.0f, particle.color.r, particle.color.g, particle.color.b,
-                           particle.color.a, particle.size, particle.velocity.x,
+                          {particle.position.x, particle.position.y, particle.position.z, 0.0f, 1.0f, particle.color.r,
+                           particle.color.g, particle.color.b, particle.color.a, particle.size, particle.velocity.x,
                            particle.velocity.y, particle.velocity.z, age});
     }
 
@@ -699,9 +681,9 @@ void ParticleRenderer::renderParticles(const EmitterNode& emitter, const Particl
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertexData.size() * sizeof(float), vertexData.data());
 
-    glDepthMask(GL_FALSE);// Disable depth writing for particles
+    glDepthMask(GL_FALSE); // Disable depth writing for particles
     glDrawArrays(GL_TRIANGLES, 0, vertexData.size() / VERTEX_STRIDE);
-    glDepthMask(GL_TRUE);// Re-enable for other objects
+    glDepthMask(GL_TRUE); // Re-enable for other objects
 
     glBindVertexArray(0);
     glUseProgram(0);
@@ -724,8 +706,7 @@ void ParticleRenderer::loadTexture(const std::string& textureNameOrPath)
     stbi_set_flip_vertically_on_load(true);
 
     // Check if it's a full path or just a name
-    if (textureNameOrPath.find('/') != std::string::npos ||
-        textureNameOrPath.find('\\') != std::string::npos)
+    if (textureNameOrPath.find('/') != std::string::npos || textureNameOrPath.find('\\') != std::string::npos)
     {
         // It's a full path, try loading directly
         texturePath = textureNameOrPath;
@@ -733,30 +714,33 @@ void ParticleRenderer::loadTexture(const std::string& textureNameOrPath)
         if (texturePath.ends_with(".dds"))
         {
             data = stbi_load_dds(texturePath.c_str(), &width, &height, &channels, 0);
-        } else
+        }
+        else
         {
             data = stbi_load(texturePath.c_str(), &width, &height, &channels, 0);
         }
-    } else
+    }
+    else
     {
         // It's just a name, try multiple extensions in texture directory
         std::vector<std::string> extensions = {".dds", ".tga", ".png", ".jpg"};
 
-        for (const auto& ext: extensions)
+        for (const auto& ext : extensions)
         {
             texturePath = textureDirectory + "/" + textureNameOrPath + ext;
 
             if (ext == ".dds")
             {
                 data = stbi_load_dds(texturePath.c_str(), &width, &height, &channels, 0);
-            } else
+            }
+            else
             {
                 data = stbi_load(texturePath.c_str(), &width, &height, &channels, 0);
             }
 
             if (data)
             {
-                break;// Successfully loaded
+                break; // Successfully loaded
             }
         }
     }
@@ -787,20 +771,17 @@ void ParticleRenderer::loadTexture(const std::string& textureNameOrPath)
         textures.push_back(texture);
         textureCache[textureNameOrPath] = texture;
 
-        std::cout << "Loaded texture: " << texturePath << " (" << width << "x" << height << ")"
-                  << std::endl;
-    } else
+        std::cout << "Loaded texture: " << texturePath << " (" << width << "x" << height << ")" << std::endl;
+    }
+    else
     {
-        std::cerr << "Failed to load texture: " << textureNameOrPath
-                  << " (tried .dds, .tga, .png, .jpg extensions)" << std::endl;
+        std::cerr << "Failed to load texture: " << textureNameOrPath << " (tried .dds, .tga, .png, .jpg extensions)"
+                  << std::endl;
         textureCache[textureNameOrPath] = 0;
     }
 }
 
-void ParticleRenderer::setTextureDirectory(const std::string& directory)
-{
-    textureDirectory = directory;
-}
+void ParticleRenderer::setTextureDirectory(const std::string& directory) { textureDirectory = directory; }
 
 GLuint ParticleRenderer::getTexture(const std::string& textureNameOrPath)
 {
@@ -897,7 +878,8 @@ void ParticleRenderer::renderEmitterNode(const EmitterNode& emitter, bool isSele
     {
         // Bright cyan for selected emitter
         glUniform3f(colorLoc, 0.0f, 1.0f, 1.0f);
-    } else
+    }
+    else
     {
         // Dimmed cyan for non-selected emitters
         glUniform3f(colorLoc, 0.0f, 0.4f, 0.4f);
@@ -913,17 +895,17 @@ void ParticleRenderer::renderEmitterNode(const EmitterNode& emitter, bool isSele
 
         // Rectangle outline
         emitterVertices = {
-            -halfX, -halfY, 0.0f, halfX,  -halfY, 0.0f,// bottom
-            halfX,  -halfY, 0.0f, halfX,  halfY,  0.0f,// right
-            halfX,  halfY,  0.0f, -halfX, halfY,  0.0f,// top
+            -halfX, -halfY, 0.0f, halfX,  -halfY, 0.0f, // bottom
+            halfX,  -halfY, 0.0f, halfX,  halfY,  0.0f, // right
+            halfX,  halfY,  0.0f, -halfX, halfY,  0.0f, // top
             -halfX, halfY,  0.0f, -halfX, -halfY, 0.0f // left
         };
-    } else
+    }
+    else
     {
         // Default small cross for point emitters
         float size = 0.3f;
-        emitterVertices = {-size, 0.0f,  0.0f, size, 0.0f, 0.0f,
-                           0.0f,  -size, 0.0f, 0.0f, size, 0.0f};
+        emitterVertices = {-size, 0.0f, 0.0f, size, 0.0f, 0.0f, 0.0f, -size, 0.0f, 0.0f, size, 0.0f};
     }
 
     // Add emission direction indicator (based on spread) - perpendicular to surface
@@ -943,10 +925,9 @@ void ParticleRenderer::renderEmitterNode(const EmitterNode& emitter, bool isSele
 
             // Four spread lines forming a cone
             emitterVertices.insert(emitterVertices.end(),
-                                   {0.0f, 0.0f, 0.0f, -spreadX, 0.0f,     spreadZ,
-                                    0.0f, 0.0f, 0.0f, spreadX,  0.0f,     spreadZ,
-                                    0.0f, 0.0f, 0.0f, 0.0f,     -spreadX, spreadZ,
-                                    0.0f, 0.0f, 0.0f, 0.0f,     spreadX,  spreadZ});
+                                   {0.0f,     0.0f,    0.0f, -spreadX, 0.0f, spreadZ, 0.0f,    0.0f,
+                                    0.0f,     spreadX, 0.0f, spreadZ,  0.0f, 0.0f,    0.0f,    0.0f,
+                                    -spreadX, spreadZ, 0.0f, 0.0f,     0.0f, 0.0f,    spreadX, spreadZ});
         }
     }
 
@@ -954,8 +935,7 @@ void ParticleRenderer::renderEmitterNode(const EmitterNode& emitter, bool isSele
     {
         glBindVertexArray(lineVAO);
         glBindBuffer(GL_ARRAY_BUFFER, lineVBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, emitterVertices.size() * sizeof(float),
-                        emitterVertices.data());
+        glBufferSubData(GL_ARRAY_BUFFER, 0, emitterVertices.size() * sizeof(float), emitterVertices.data());
 
         glDrawArrays(GL_LINES, 0, emitterVertices.size() / 3);
 
@@ -991,7 +971,7 @@ void ParticleRenderer::renderGrid()
 
     // Create grid lines
     float gridSize = 10.0f;
-    int gridLines = 21;// -10 to +10
+    int gridLines = 21; // -10 to +10
     float step = gridSize / (gridLines - 1) * 2.0f;
 
     for (int i = 0; i < gridLines; ++i)
@@ -1006,11 +986,10 @@ void ParticleRenderer::renderGrid()
     }
 
     // Highlight main axes (in XY plane)
-    std::vector<float> axisVertices = {
-        // X axis (red line would be nice but we'll use brighter gray)
-        -gridSize, 0.0f, 0.0f, gridSize, 0.0f, 0.0f,
-        // Y axis
-        0.0f, -gridSize, 0.0f, 0.0f, gridSize, 0.0f};
+    std::vector<float> axisVertices = {// X axis (red line would be nice but we'll use brighter gray)
+                                       -gridSize, 0.0f, 0.0f, gridSize, 0.0f, 0.0f,
+                                       // Y axis
+                                       0.0f, -gridSize, 0.0f, 0.0f, gridSize, 0.0f};
 
     glBindVertexArray(lineVAO);
     glBindBuffer(GL_ARRAY_BUFFER, lineVBO);
@@ -1046,8 +1025,7 @@ void ParticleRenderer::renderAxisGizmo(int viewportWidth, int viewportHeight)
     GLint colorLoc = glGetUniformLocation(lineShaderProgram, "lineColor");
 
     // Create orthographic projection for screen-space gizmo
-    glm::mat4 gizmoProjection =
-        glm::ortho(0.0f, (float) viewportWidth, 0.0f, (float) viewportHeight, -1.0f, 1.0f);
+    glm::mat4 gizmoProjection = glm::ortho(0.0f, (float)viewportWidth, 0.0f, (float)viewportHeight, -1.0f, 1.0f);
 
     // Use identity matrices - we'll do the transformation manually
     glm::mat4 identity = glm::mat4(1.0f);
@@ -1064,19 +1042,19 @@ void ParticleRenderer::renderAxisGizmo(int viewportWidth, int viewportHeight)
     // Define world coordinate axis directions (Z-up system)
     std::vector<glm::vec3> worldAxisDirections = {
         glm::vec3(1.0f, 0.0f, 0.0f), // +X (right)
-        glm::vec3(-1.0f, 0.0f, 0.0f),// -X (left)
+        glm::vec3(-1.0f, 0.0f, 0.0f), // -X (left)
         glm::vec3(0.0f, 1.0f, 0.0f), // +Y (away from viewer)
-        glm::vec3(0.0f, -1.0f, 0.0f),// -Y (toward viewer)
+        glm::vec3(0.0f, -1.0f, 0.0f), // -Y (toward viewer)
         glm::vec3(0.0f, 0.0f, 1.0f), // +Z (up)
         glm::vec3(0.0f, 0.0f, -1.0f) // -Z (down)
     };
 
     std::vector<glm::vec3> axisColors = {
-        glm::vec3(1.0f, 0.4f, 0.4f),// +X bright red
-        glm::vec3(0.7f, 0.3f, 0.3f),// -X dark red
-        glm::vec3(0.4f, 1.0f, 0.4f),// +Y bright green
-        glm::vec3(0.3f, 0.7f, 0.3f),// -Y dark green
-        glm::vec3(0.4f, 0.4f, 1.0f),// +Z bright blue
+        glm::vec3(1.0f, 0.4f, 0.4f), // +X bright red
+        glm::vec3(0.7f, 0.3f, 0.3f), // -X dark red
+        glm::vec3(0.4f, 1.0f, 0.4f), // +Y bright green
+        glm::vec3(0.3f, 0.7f, 0.3f), // -Y dark green
+        glm::vec3(0.4f, 0.4f, 1.0f), // +Z bright blue
         glm::vec3(0.3f, 0.3f, 0.7f) // -Z dark blue
     };
 
@@ -1086,16 +1064,14 @@ void ParticleRenderer::renderAxisGizmo(int viewportWidth, int viewportHeight)
         glm::vec4 cameraSpaceDir = viewMatrix * glm::vec4(worldAxisDirections[i], 0.0f);
 
         // Convert to screen coordinates
-        glm::vec2 screenEnd =
-            screenGizmoCenter + glm::vec2(cameraSpaceDir.x, cameraSpaceDir.y) * gizmoSize;
+        glm::vec2 screenEnd = screenGizmoCenter + glm::vec2(cameraSpaceDir.x, cameraSpaceDir.y) * gizmoSize;
 
         // Create line from center to endpoint
         std::vector<float> axisVertices = {screenGizmoCenter.x, screenGizmoCenter.y, 0.0f,
                                            screenEnd.x,         screenEnd.y,         0.0f};
 
         glUniform3f(colorLoc, axisColors[i].r, axisColors[i].g, axisColors[i].b);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, axisVertices.size() * sizeof(float),
-                        axisVertices.data());
+        glBufferSubData(GL_ARRAY_BUFFER, 0, axisVertices.size() * sizeof(float), axisVertices.data());
         glDrawArrays(GL_LINES, 0, 2);
     }
 
@@ -1106,8 +1082,7 @@ void ParticleRenderer::renderAxisGizmo(int viewportWidth, int viewportHeight)
     glUseProgram(0);
 }
 
-std::vector<glm::vec2> ParticleRenderer::getAxisGizmoScreenPositions(int viewportWidth,
-                                                                     int viewportHeight) const
+std::vector<glm::vec2> ParticleRenderer::getAxisGizmoScreenPositions(int viewportWidth, int viewportHeight) const
 {
     // Gizmo screen position in top-right corner
     glm::vec2 screenGizmoCenter(viewportWidth - 60.0f, 60.0f);
@@ -1116,35 +1091,199 @@ std::vector<glm::vec2> ParticleRenderer::getAxisGizmoScreenPositions(int viewpor
     // Define world coordinate axis directions (Z-up system)
     std::vector<glm::vec3> worldAxisDirections = {
         glm::vec3(1.0f, 0.0f, 0.0f), // +X (right)
-        glm::vec3(-1.0f, 0.0f, 0.0f),// -X (left)
+        glm::vec3(-1.0f, 0.0f, 0.0f), // -X (left)
         glm::vec3(0.0f, 1.0f, 0.0f), // +Y (away from viewer)
-        glm::vec3(0.0f, -1.0f, 0.0f),// -Y (toward viewer)
+        glm::vec3(0.0f, -1.0f, 0.0f), // -Y (toward viewer)
         glm::vec3(0.0f, 0.0f, 1.0f), // +Z (up)
         glm::vec3(0.0f, 0.0f, -1.0f) // -Z (down)
     };
 
     std::vector<glm::vec2> screenPositions;
 
-    for (const auto& worldDir: worldAxisDirections)
+    for (const auto& worldDir : worldAxisDirections)
     {
         // Transform world direction to camera space (this shows how the world axes appear to camera)
         glm::vec4 cameraSpaceDir = viewMatrix * glm::vec4(worldDir, 0.0f);
 
         // Project to screen space around gizmo center
         // Use X and Y components for screen positioning, Z determines depth (for future occlusion)
-        glm::vec2 screenPos =
-            screenGizmoCenter + glm::vec2(cameraSpaceDir.x, cameraSpaceDir.y) * gizmoSize;
+        glm::vec2 screenPos = screenGizmoCenter + glm::vec2(cameraSpaceDir.x, cameraSpaceDir.y) * gizmoSize;
         screenPositions.push_back(screenPos);
     }
 
     return screenPositions;
 }
 
+void ParticleRenderer::renderGrabModeIndicator(int viewportWidth, int viewportHeight, GrabMode grabMode,
+                                               const glm::vec3& emitterPosition)
+{
+    if (grabMode == GrabMode::None)
+    {
+        return;
+    }
+
+    // Ensure standard blend state for editor elements
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glUseProgram(lineShaderProgram);
+
+    GLint viewLoc = glGetUniformLocation(lineShaderProgram, "view");
+    GLint projLoc = glGetUniformLocation(lineShaderProgram, "projection");
+    GLint modelLoc = glGetUniformLocation(lineShaderProgram, "model");
+    GLint colorLoc = glGetUniformLocation(lineShaderProgram, "lineColor");
+
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &viewMatrix[0][0]);
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projectionMatrix[0][0]);
+
+    // Position indicator at emitter location
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), emitterPosition);
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
+
+    glBindVertexArray(lineVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, lineVBO);
+
+    // Disable depth test so indicator is always visible
+    glDisable(GL_DEPTH_TEST);
+
+    std::vector<float> indicatorVertices;
+    float axisLength = 2.0f;
+
+    switch (grabMode)
+    {
+    case GrabMode::Free:
+        // Show all three axes in bright colors
+        glUniform3f(colorLoc, 1.0f, 0.2f, 0.2f); // Red X
+        indicatorVertices = {0.0f, 0.0f, 0.0f, axisLength, 0.0f, 0.0f};
+        glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+        glDrawArrays(GL_LINES, 0, 2);
+
+        glUniform3f(colorLoc, 0.2f, 1.0f, 0.2f); // Green Y
+        indicatorVertices = {0.0f, 0.0f, 0.0f, 0.0f, axisLength, 0.0f};
+        glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+        glDrawArrays(GL_LINES, 0, 2);
+
+        glUniform3f(colorLoc, 0.2f, 0.2f, 1.0f); // Blue Z
+        indicatorVertices = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, axisLength};
+        glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+        glDrawArrays(GL_LINES, 0, 2);
+        break;
+
+    case GrabMode::X_Axis:
+        // Bright red X axis
+        glUniform3f(colorLoc, 1.0f, 0.0f, 0.0f); // Red for X axis
+        indicatorVertices = {-axisLength, 0.0f, 0.0f, axisLength, 0.0f, 0.0f};
+        glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+        glDrawArrays(GL_LINES, 0, 2);
+        break;
+
+    case GrabMode::Y_Axis:
+        // Bright green Y axis
+        glUniform3f(colorLoc, 0.0f, 1.0f, 0.0f); // Green for Y axis
+        indicatorVertices = {0.0f, -axisLength, 0.0f, 0.0f, axisLength, 0.0f};
+        glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+        glDrawArrays(GL_LINES, 0, 2);
+        break;
+
+    case GrabMode::Z_Axis:
+        // Bright blue Z axis
+        glUniform3f(colorLoc, 0.0f, 0.0f, 1.0f); // Blue for Z axis
+        indicatorVertices = {0.0f, 0.0f, -axisLength, 0.0f, 0.0f, axisLength};
+        glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+        glDrawArrays(GL_LINES, 0, 2);
+        break;
+
+    case GrabMode::YZ_Plane:
+        { // Shift+X: Y-Z plane
+            // Show Y and Z axes in yellow, dim X
+            glUniform3f(colorLoc, 1.0f, 1.0f, 0.0f); // Yellow for active plane
+            indicatorVertices = {0.0f, -axisLength, 0.0f, 0.0f, axisLength, 0.0f}; // Y axis
+            glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+            glDrawArrays(GL_LINES, 0, 2);
+
+            indicatorVertices = {0.0f, 0.0f, -axisLength, 0.0f, 0.0f, axisLength}; // Z axis
+            glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+            glDrawArrays(GL_LINES, 0, 2);
+
+            // Draw plane outline
+            glUniform3f(colorLoc, 1.0f, 1.0f, 0.0f); // Yellow plane
+            float planeSize = axisLength * 0.7f;
+            indicatorVertices = {
+                0.0f, -planeSize, -planeSize, 0.0f, planeSize,  -planeSize, // Bottom edge
+                0.0f, planeSize,  -planeSize, 0.0f, planeSize,  planeSize, // Right edge
+                0.0f, planeSize,  planeSize,  0.0f, -planeSize, planeSize, // Top edge
+                0.0f, -planeSize, planeSize,  0.0f, -planeSize, -planeSize // Left edge
+            };
+            glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+            glDrawArrays(GL_LINES, 0, 8);
+            break;
+        }
+
+    case GrabMode::XZ_Plane:
+        { // Shift+Y: X-Z plane
+            // Show X and Z axes in yellow
+            glUniform3f(colorLoc, 1.0f, 1.0f, 0.0f); // Yellow for active plane
+            indicatorVertices = {-axisLength, 0.0f, 0.0f, axisLength, 0.0f, 0.0f}; // X axis
+            glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+            glDrawArrays(GL_LINES, 0, 2);
+
+            indicatorVertices = {0.0f, 0.0f, -axisLength, 0.0f, 0.0f, axisLength}; // Z axis
+            glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+            glDrawArrays(GL_LINES, 0, 2);
+
+            // Draw plane outline
+            float planeSize2 = axisLength * 0.7f;
+            indicatorVertices = {
+                -planeSize2, 0.0f, -planeSize2, planeSize2,  0.0f, -planeSize2, // Front edge
+                planeSize2,  0.0f, -planeSize2, planeSize2,  0.0f, planeSize2, // Right edge
+                planeSize2,  0.0f, planeSize2,  -planeSize2, 0.0f, planeSize2, // Back edge
+                -planeSize2, 0.0f, planeSize2,  -planeSize2, 0.0f, -planeSize2 // Left edge
+            };
+            glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+            glDrawArrays(GL_LINES, 0, 8);
+            break;
+        }
+
+    case GrabMode::XY_Plane:
+        { // Shift+Z: X-Y plane
+            // Show X and Y axes in yellow
+            glUniform3f(colorLoc, 1.0f, 1.0f, 0.0f); // Yellow for active plane
+            indicatorVertices = {-axisLength, 0.0f, 0.0f, axisLength, 0.0f, 0.0f}; // X axis
+            glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+            glDrawArrays(GL_LINES, 0, 2);
+
+            indicatorVertices = {0.0f, -axisLength, 0.0f, 0.0f, axisLength, 0.0f}; // Y axis
+            glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+            glDrawArrays(GL_LINES, 0, 2);
+
+            // Draw plane outline
+            float planeSize3 = axisLength * 0.7f;
+            indicatorVertices = {
+                -planeSize3, -planeSize3, 0.0f, planeSize3,  -planeSize3, 0.0f, // Bottom edge
+                planeSize3,  -planeSize3, 0.0f, planeSize3,  planeSize3,  0.0f, // Right edge
+                planeSize3,  planeSize3,  0.0f, -planeSize3, planeSize3,  0.0f, // Top edge
+                -planeSize3, planeSize3,  0.0f, -planeSize3, -planeSize3, 0.0f // Left edge
+            };
+            glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+            glDrawArrays(GL_LINES, 0, 8);
+            break;
+        }
+
+    default:
+        break;
+    }
+
+    // Re-enable depth test
+    glEnable(GL_DEPTH_TEST);
+
+    glBindVertexArray(0);
+    glUseProgram(0);
+}
+
 void ParticleRenderer::setupFramebuffer(int width, int height)
 {
     if (framebuffer != 0 && fbWidth == width && fbHeight == height)
     {
-        return;// Already setup with correct size
+        return; // Already setup with correct size
     }
 
     cleanupFramebuffer();
@@ -1199,8 +1338,8 @@ void ParticleRenderer::cleanupFramebuffer()
     fbWidth = fbHeight = 0;
 }
 
-void ParticleRenderer::renderToTexture(const std::vector<EmitterNode>& emitters, float deltaTime,
-                                       int width, int height, int selectedEmitter)
+void ParticleRenderer::renderToTexture(const std::vector<EmitterNode>& emitters, float deltaTime, int width, int height,
+                                       int selectedEmitter)
 {
     // Update global animation time
     globalAnimationTime += deltaTime;
@@ -1250,4 +1389,616 @@ int ParticleRenderer::getTotalActiveParticleCount() const
         }
     }
     return totalCount;
+}
+
+ParticleRenderer::Ray ParticleRenderer::createRayFromMouse(float mouseX, float mouseY, int viewportWidth,
+                                                           int viewportHeight) const
+{
+    // Convert mouse coordinates to normalized device coordinates
+    float x = (2.0f * mouseX) / viewportWidth - 1.0f;
+    float y = 1.0f - (2.0f * mouseY) / viewportHeight;
+
+    // Create points in clip space
+    glm::vec4 rayClip = glm::vec4(x, y, -1.0f, 1.0f);
+
+    // Transform to eye space
+    glm::mat4 invProjection = glm::inverse(projectionMatrix);
+    glm::vec4 rayEye = invProjection * rayClip;
+    rayEye = glm::vec4(rayEye.x, rayEye.y, -1.0f, 0.0f);
+
+    // Transform to world space
+    glm::mat4 invView = glm::inverse(viewMatrix);
+    glm::vec4 rayWorld = invView * rayEye;
+    glm::vec3 rayDir = glm::normalize(glm::vec3(rayWorld));
+
+    // Get camera position (origin of ray)
+    glm::vec3 rayOrigin = glm::vec3(invView[3]);
+
+    Ray ray;
+    ray.origin = rayOrigin;
+    ray.direction = rayDir;
+    return ray;
+}
+
+bool ParticleRenderer::rayIntersectsSphere(const Ray& ray, const glm::vec3& center, float radius, float& distance) const
+{
+    glm::vec3 oc = ray.origin - center;
+    float a = glm::dot(ray.direction, ray.direction);
+    float b = 2.0f * glm::dot(oc, ray.direction);
+    float c = glm::dot(oc, oc) - radius * radius;
+
+    float discriminant = b * b - 4 * a * c;
+    if (discriminant < 0)
+    {
+        return false;
+    }
+
+    float sqrtDiscriminant = sqrt(discriminant);
+    float t1 = (-b - sqrtDiscriminant) / (2.0f * a);
+    float t2 = (-b + sqrtDiscriminant) / (2.0f * a);
+
+    // We want the closest positive intersection
+    if (t1 > 0)
+    {
+        distance = t1;
+        return true;
+    }
+    else if (t2 > 0)
+    {
+        distance = t2;
+        return true;
+    }
+
+    return false;
+}
+
+bool ParticleRenderer::rayIntersectsCone(const Ray& ray, const glm::vec3& apex, const glm::vec3& direction,
+                                         float height, float angle, float& distance) const
+{
+    // Simplified cone intersection - treat as expanding sphere along direction
+    // This is a reasonable approximation for picking purposes
+
+    float cosAngle = cos(angle);
+    float sinAngle = sin(angle);
+
+    // Check multiple points along the cone axis for intersection
+    const int samples = 10;
+    for (int i = 1; i <= samples; ++i)
+    {
+        float t = (height * i) / samples;
+        glm::vec3 point = apex + direction * t;
+        float radius = t * sinAngle;
+
+        if (radius > 0.1f)
+        { // Minimum radius for picking
+            float dist;
+            if (rayIntersectsSphere(ray, point, radius, dist))
+            {
+                distance = dist;
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+int ParticleRenderer::pickEmitter(const std::vector<EmitterNode>& emitters, float mouseX, float mouseY,
+                                  int viewportWidth, int viewportHeight) const
+{
+    Ray ray = createRayFromMouse(mouseX, mouseY, viewportWidth, viewportHeight);
+
+    int closestEmitter = -1;
+    float closestDistance = std::numeric_limits<float>::max();
+
+    for (int i = 0; i < static_cast<int>(emitters.size()); ++i)
+    {
+        const EmitterNode& emitter = emitters[i];
+        glm::vec3 emitterPos = emitter.getAnimatedPosition(globalAnimationTime);
+        float distance;
+
+        // Check intersection with emitter node (as a sphere)
+        float nodeRadius = std::max(0.5f, std::max(emitter.xsize, emitter.ysize) * 0.5f + 0.2f);
+        if (rayIntersectsSphere(ray, emitterPos, nodeRadius, distance))
+        {
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestEmitter = i;
+            }
+        }
+
+        // Check intersection with spread cone (if velocity > 0 and spread > 0)
+        if (emitter.velocity > 0.0f && emitter.spread > 0.0f)
+        {
+            // Transform cone direction by emitter orientation
+            glm::mat3 rotMatrix = glm::mat3_cast(emitter.getOrientation());
+            glm::vec3 coneDirection = rotMatrix * glm::vec3(0.0f, 0.0f, 1.0f); // Local Z-axis
+
+            float coneHeight = 2.0f; // Visible length of cone
+            float coneAngle = glm::radians(emitter.spread * 0.5f);
+
+            if (rayIntersectsCone(ray, emitterPos, coneDirection, coneHeight, coneAngle, distance))
+            {
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestEmitter = i;
+                }
+            }
+        }
+    }
+
+    return closestEmitter;
+}
+
+glm::vec3 ParticleRenderer::screenToWorldDelta(float startMouseX, float startMouseY, float currentMouseX,
+                                               float currentMouseY, int viewportWidth, int viewportHeight,
+                                               const glm::vec3& referencePoint) const
+{
+    // Create rays from start and current mouse positions
+    Ray startRay = createRayFromMouse(startMouseX, startMouseY, viewportWidth, viewportHeight);
+    Ray currentRay = createRayFromMouse(currentMouseX, currentMouseY, viewportWidth, viewportHeight);
+
+    // Project reference point to view space to get depth
+    glm::vec4 refViewSpace = viewMatrix * glm::vec4(referencePoint, 1.0f);
+    float depth = -refViewSpace.z; // Distance from camera
+
+    // Calculate world positions at the reference depth
+    glm::vec3 startWorldPos = startRay.origin + startRay.direction * depth;
+    glm::vec3 currentWorldPos = currentRay.origin + currentRay.direction * depth;
+
+    return currentWorldPos - startWorldPos;
+}
+
+glm::vec3 ParticleRenderer::screenToWorldPlaneMovement(float startMouseX, float startMouseY, float currentMouseX,
+                                                       float currentMouseY, int viewportWidth, int viewportHeight,
+                                                       const glm::vec3& referencePoint) const
+{
+    // Calculate mouse delta in screen space (pixels)
+    float mouseDeltaX = currentMouseX - startMouseX;
+    float mouseDeltaY = currentMouseY - startMouseY;
+
+    // Convert to normalized device coordinates (-1 to 1)
+    float ndcDeltaX = (2.0f * mouseDeltaX) / viewportWidth;
+    float ndcDeltaY = -(2.0f * mouseDeltaY) / viewportHeight; // Flip Y for OpenGL
+
+    // Project reference point to screen space to get its depth and screen position
+    glm::vec4 refClipSpace = projectionMatrix * viewMatrix * glm::vec4(referencePoint, 1.0f);
+    glm::vec3 refNDC = glm::vec3(refClipSpace) / refClipSpace.w;
+
+    // Create two points in NDC space: current position and position + mouse delta
+    glm::vec3 startNDC = refNDC;
+    glm::vec3 endNDC = refNDC + glm::vec3(ndcDeltaX, ndcDeltaY, 0.0f); // Keep same depth
+
+    // Convert back to world space
+    glm::mat4 invVP = glm::inverse(projectionMatrix * viewMatrix);
+
+    glm::vec4 startWorld = invVP * glm::vec4(startNDC, 1.0f);
+    startWorld /= startWorld.w;
+
+    glm::vec4 endWorld = invVP * glm::vec4(endNDC, 1.0f);
+    endWorld /= endWorld.w;
+
+    return glm::vec3(endWorld - startWorld);
+}
+
+glm::vec3 ParticleRenderer::mouseToProportionalPlaneMovement(float mouseDeltaX, float mouseDeltaY, GrabMode grabMode,
+                                                             float sensitivity) const
+{
+    glm::vec3 movement(0.0f);
+
+    switch (grabMode)
+    {
+    case GrabMode::YZ_Plane: // Shift+X: Move on Y-Z plane
+        movement.y = mouseDeltaX * sensitivity; // Mouse X → Y axis
+        movement.z = -mouseDeltaY * sensitivity; // Mouse Y → Z axis (inverted for intuitive up/down)
+        break;
+
+    case GrabMode::XZ_Plane: // Shift+Y: Move on X-Z plane
+        movement.x = mouseDeltaX * sensitivity; // Mouse X → X axis
+        movement.z = -mouseDeltaY * sensitivity; // Mouse Y → Z axis (inverted for intuitive up/down)
+        break;
+
+    case GrabMode::XY_Plane: // Shift+Z: Move on X-Y plane
+        movement.x = mouseDeltaX * sensitivity; // Mouse X → X axis
+        movement.y = mouseDeltaY * sensitivity; // Mouse Y → Y axis
+        break;
+
+    case GrabMode::X_Axis: // X only
+        movement.x = mouseDeltaX * sensitivity; // Mouse X → X axis
+        break;
+
+    case GrabMode::Y_Axis: // Y only
+        movement.y = mouseDeltaX * sensitivity; // Mouse X → Y axis
+        break;
+
+    case GrabMode::Z_Axis: // Z only
+        movement.z = -mouseDeltaY * sensitivity; // Mouse Y → Z axis (inverted for intuitive up/down)
+        break;
+
+    case GrabMode::Free:
+    case GrabMode::None:
+    default:
+        // For free movement, use the screen-space projection method
+        return glm::vec3(0.0f); // Will be handled by the calling code
+    }
+
+    return movement;
+}
+
+glm::vec3 ParticleRenderer::mouseToCameraRelativeMovement(float mouseDeltaX, float mouseDeltaY, GrabMode grabMode,
+                                                          float sensitivity) const
+{
+    // Extract camera orientation vectors from view matrix
+    glm::mat4 invView = glm::inverse(viewMatrix);
+    glm::vec3 cameraRight = glm::normalize(glm::vec3(invView[0])); // Camera's right vector
+    glm::vec3 cameraUp = glm::normalize(glm::vec3(invView[1])); // Camera's up vector
+    glm::vec3 cameraForward = -glm::normalize(glm::vec3(invView[2])); // Camera's forward vector (negative Z)
+
+    glm::vec3 movement(0.0f);
+
+    switch (grabMode)
+    {
+    case GrabMode::Free:
+        // Free movement: Mouse X = camera right/left, Mouse Y = camera up/down
+        movement = cameraRight * mouseDeltaX * sensitivity + cameraUp * (-mouseDeltaY * sensitivity);
+        break;
+
+    case GrabMode::X_Axis:
+        {
+            // X axis constraint: project camera right onto world X-axis
+            glm::vec3 worldX(1.0f, 0.0f, 0.0f);
+            float rightDotX = glm::dot(cameraRight, worldX);
+            float upDotX = glm::dot(cameraUp, worldX);
+            // Use mouse movement that best aligns with world X
+            float xMovement =
+                (std::abs(rightDotX) > std::abs(upDotX)) ? mouseDeltaX * rightDotX : -mouseDeltaY * upDotX;
+            movement = worldX * xMovement * sensitivity;
+            break;
+        }
+
+    case GrabMode::Y_Axis:
+        {
+            // Y axis constraint: project camera vectors onto world Y-axis
+            glm::vec3 worldY(0.0f, 1.0f, 0.0f);
+            float rightDotY = glm::dot(cameraRight, worldY);
+            float upDotY = glm::dot(cameraUp, worldY);
+            float yMovement =
+                (std::abs(rightDotY) > std::abs(upDotY)) ? mouseDeltaX * rightDotY : -mouseDeltaY * upDotY;
+            movement = worldY * yMovement * sensitivity;
+            break;
+        }
+
+    case GrabMode::Z_Axis:
+        {
+            // Z axis constraint: project camera vectors onto world Z-axis
+            glm::vec3 worldZ(0.0f, 0.0f, 1.0f);
+            float rightDotZ = glm::dot(cameraRight, worldZ);
+            float upDotZ = glm::dot(cameraUp, worldZ);
+            float zMovement =
+                (std::abs(rightDotZ) > std::abs(upDotZ)) ? mouseDeltaX * rightDotZ : -mouseDeltaY * upDotZ;
+            movement = worldZ * zMovement * sensitivity;
+            break;
+        }
+
+    case GrabMode::YZ_Plane:
+        {
+            // Y-Z Plane (Shift+X): Movement in camera space, projected onto Y-Z plane
+            glm::vec3 cameraMovement =
+                cameraRight * mouseDeltaX * sensitivity + cameraUp * (-mouseDeltaY * sensitivity);
+            // Remove X component to constrain to Y-Z plane
+            movement = glm::vec3(0.0f, cameraMovement.y, cameraMovement.z);
+            break;
+        }
+
+    case GrabMode::XZ_Plane:
+        {
+            // X-Z Plane (Shift+Y): Movement in camera space, projected onto X-Z plane
+            glm::vec3 cameraMovement =
+                cameraRight * mouseDeltaX * sensitivity + cameraUp * (-mouseDeltaY * sensitivity);
+            // Remove Y component to constrain to X-Z plane
+            movement = glm::vec3(cameraMovement.x, 0.0f, cameraMovement.z);
+            break;
+        }
+
+    case GrabMode::XY_Plane:
+        {
+            // X-Y Plane (Shift+Z): Movement in camera space, projected onto X-Y plane
+            glm::vec3 cameraMovement =
+                cameraRight * mouseDeltaX * sensitivity + cameraUp * (-mouseDeltaY * sensitivity);
+            // Remove Z component to constrain to X-Y plane
+            movement = glm::vec3(cameraMovement.x, cameraMovement.y, 0.0f);
+            break;
+        }
+
+    case GrabMode::None:
+    default:
+        break;
+    }
+
+    return movement;
+}
+
+glm::vec2 ParticleRenderer::mouseToScale(float mouseDeltaX, float mouseDeltaY, const glm::vec2& startSize,
+                                         ScaleMode scaleMode, float sensitivity) const
+{
+    glm::vec2 scaledSize = startSize;
+
+    switch (scaleMode)
+    {
+    case ScaleMode::Uniform:
+        {
+            // Use Y mouse movement for uniform scaling (up = bigger, down = smaller)
+            float scaleFactor = 1.0f + (-mouseDeltaY * sensitivity);
+            scaledSize = startSize * scaleFactor;
+
+            // Clamp to min/max bounds
+            scaledSize.x = glm::clamp(scaledSize.x, 0.0f, 500.0f);
+            scaledSize.y = glm::clamp(scaledSize.y, 0.0f, 500.0f);
+            break;
+        }
+    case ScaleMode::None:
+    default:
+        break;
+    }
+
+    return scaledSize;
+}
+
+void ParticleRenderer::renderScaleModeIndicator(int viewportWidth, int viewportHeight, ScaleMode scaleMode,
+                                                const glm::vec3& emitterPosition, const glm::vec2& currentSize)
+{
+    if (scaleMode == ScaleMode::None)
+    {
+        return;
+    }
+
+    // Ensure standard blend state for editor elements
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glUseProgram(lineShaderProgram);
+
+    GLint viewLoc = glGetUniformLocation(lineShaderProgram, "view");
+    GLint projLoc = glGetUniformLocation(lineShaderProgram, "projection");
+    GLint modelLoc = glGetUniformLocation(lineShaderProgram, "model");
+    GLint colorLoc = glGetUniformLocation(lineShaderProgram, "lineColor");
+
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &viewMatrix[0][0]);
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projectionMatrix[0][0]);
+
+    // Position indicator at emitter location
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), emitterPosition);
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
+
+    glBindVertexArray(lineVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, lineVBO);
+
+    // Disable depth test so indicator is always visible
+    glDisable(GL_DEPTH_TEST);
+
+    std::vector<float> indicatorVertices;
+
+    switch (scaleMode)
+    {
+    case ScaleMode::Uniform:
+        {
+            // Draw a square outline showing the current scale
+            float halfX = currentSize.x * 0.5f;
+            float halfY = currentSize.y * 0.5f;
+
+            // Use cyan color for scale mode
+            glUniform3f(colorLoc, 0.0f, 1.0f, 1.0f); // Cyan
+
+            indicatorVertices = {
+                -halfX, -halfY, 0.0f, halfX,  -halfY, 0.0f, // Bottom edge
+                halfX,  -halfY, 0.0f, halfX,  halfY,  0.0f, // Right edge
+                halfX,  halfY,  0.0f, -halfX, halfY,  0.0f, // Top edge
+                -halfX, halfY,  0.0f, -halfX, -halfY, 0.0f // Left edge
+            };
+            glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+            glDrawArrays(GL_LINES, 0, 8);
+
+            // Draw diagonal cross lines to show it's a scale indicator
+            indicatorVertices = {
+                -halfX * 0.7f, -halfY * 0.7f, 0.0f, halfX * 0.7f,  halfY * 0.7f, 0.0f, // Diagonal 1
+                halfX * 0.7f,  -halfY * 0.7f, 0.0f, -halfX * 0.7f, halfY * 0.7f, 0.0f // Diagonal 2
+            };
+            glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+            glDrawArrays(GL_LINES, 0, 4);
+            break;
+        }
+    case ScaleMode::None:
+    default:
+        break;
+    }
+
+    // Re-enable depth test
+    glEnable(GL_DEPTH_TEST);
+
+    glBindVertexArray(0);
+    glUseProgram(0);
+}
+
+void ParticleRenderer::renderRotationModeIndicator(int viewportWidth, int viewportHeight, RotationMode rotationMode,
+                                                   const glm::vec3& emitterPosition)
+{
+    if (rotationMode == RotationMode::None)
+    {
+        return;
+    }
+
+    // Ensure standard blend state for editor elements
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glUseProgram(lineShaderProgram);
+    GLint viewLoc = glGetUniformLocation(lineShaderProgram, "view");
+    GLint projLoc = glGetUniformLocation(lineShaderProgram, "projection");
+    GLint modelLoc = glGetUniformLocation(lineShaderProgram, "model");
+    GLint colorLoc = glGetUniformLocation(lineShaderProgram, "lineColor");
+
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &viewMatrix[0][0]);
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projectionMatrix[0][0]);
+
+    // Position indicator at emitter location
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), emitterPosition);
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
+
+    glBindVertexArray(lineVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, lineVBO);
+
+    // Disable depth test so indicator is always visible
+    glDisable(GL_DEPTH_TEST);
+
+    std::vector<float> indicatorVertices;
+    float circleRadius = 1.0f;
+    int numSegments = 32;
+
+    switch (rotationMode)
+    {
+    case RotationMode::Free:
+        // Show all three rotation circles (XY, XZ, YZ planes) in bright colors
+        // XY plane rotation circle (around Z axis) - Blue
+        glUniform3f(colorLoc, 0.3f, 0.3f, 1.0f);
+        indicatorVertices.clear();
+        for (int i = 0; i < numSegments; ++i)
+        {
+            float angle1 = 2.0f * M_PI * i / numSegments;
+            float angle2 = 2.0f * M_PI * (i + 1) / numSegments;
+            indicatorVertices.insert(indicatorVertices.end(),
+                                     {circleRadius * cos(angle1), circleRadius * sin(angle1), 0.0f,
+                                      circleRadius * cos(angle2), circleRadius * sin(angle2), 0.0f});
+        }
+        glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+        glDrawArrays(GL_LINES, 0, numSegments * 2);
+
+        // XZ plane rotation circle (around Y axis) - Green
+        glUniform3f(colorLoc, 0.3f, 1.0f, 0.3f);
+        indicatorVertices.clear();
+        for (int i = 0; i < numSegments; ++i)
+        {
+            float angle1 = 2.0f * M_PI * i / numSegments;
+            float angle2 = 2.0f * M_PI * (i + 1) / numSegments;
+            indicatorVertices.insert(indicatorVertices.end(),
+                                     {circleRadius * cos(angle1), 0.0f, circleRadius * sin(angle1),
+                                      circleRadius * cos(angle2), 0.0f, circleRadius * sin(angle2)});
+        }
+        glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+        glDrawArrays(GL_LINES, 0, numSegments * 2);
+
+        // YZ plane rotation circle (around X axis) - Red
+        glUniform3f(colorLoc, 1.0f, 0.3f, 0.3f);
+        indicatorVertices.clear();
+        for (int i = 0; i < numSegments; ++i)
+        {
+            float angle1 = 2.0f * M_PI * i / numSegments;
+            float angle2 = 2.0f * M_PI * (i + 1) / numSegments;
+            indicatorVertices.insert(indicatorVertices.end(),
+                                     {0.0f, circleRadius * cos(angle1), circleRadius * sin(angle1), 0.0f,
+                                      circleRadius * cos(angle2), circleRadius * sin(angle2)});
+        }
+        glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+        glDrawArrays(GL_LINES, 0, numSegments * 2);
+        break;
+
+    case RotationMode::X_Axis:
+        // Show only YZ plane rotation circle (around X axis) - Bright Red
+        glUniform3f(colorLoc, 1.0f, 0.2f, 0.2f);
+        indicatorVertices.clear();
+        for (int i = 0; i < numSegments; ++i)
+        {
+            float angle1 = 2.0f * M_PI * i / numSegments;
+            float angle2 = 2.0f * M_PI * (i + 1) / numSegments;
+            indicatorVertices.insert(indicatorVertices.end(),
+                                     {0.0f, circleRadius * cos(angle1), circleRadius * sin(angle1), 0.0f,
+                                      circleRadius * cos(angle2), circleRadius * sin(angle2)});
+        }
+        glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+        glDrawArrays(GL_LINES, 0, numSegments * 2);
+        break;
+
+    case RotationMode::Y_Axis:
+        // Show only XZ plane rotation circle (around Y axis) - Bright Green
+        glUniform3f(colorLoc, 0.2f, 1.0f, 0.2f);
+        indicatorVertices.clear();
+        for (int i = 0; i < numSegments; ++i)
+        {
+            float angle1 = 2.0f * M_PI * i / numSegments;
+            float angle2 = 2.0f * M_PI * (i + 1) / numSegments;
+            indicatorVertices.insert(indicatorVertices.end(),
+                                     {circleRadius * cos(angle1), 0.0f, circleRadius * sin(angle1),
+                                      circleRadius * cos(angle2), 0.0f, circleRadius * sin(angle2)});
+        }
+        glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+        glDrawArrays(GL_LINES, 0, numSegments * 2);
+        break;
+
+    case RotationMode::Z_Axis:
+        // Show only XY plane rotation circle (around Z axis) - Bright Blue
+        glUniform3f(colorLoc, 0.2f, 0.2f, 1.0f);
+        indicatorVertices.clear();
+        for (int i = 0; i < numSegments; ++i)
+        {
+            float angle1 = 2.0f * M_PI * i / numSegments;
+            float angle2 = 2.0f * M_PI * (i + 1) / numSegments;
+            indicatorVertices.insert(indicatorVertices.end(),
+                                     {circleRadius * cos(angle1), circleRadius * sin(angle1), 0.0f,
+                                      circleRadius * cos(angle2), circleRadius * sin(angle2), 0.0f});
+        }
+        glBufferSubData(GL_ARRAY_BUFFER, 0, indicatorVertices.size() * sizeof(float), indicatorVertices.data());
+        glDrawArrays(GL_LINES, 0, numSegments * 2);
+        break;
+
+    case RotationMode::None:
+    default:
+        break;
+    }
+
+    // Re-enable depth test
+    glEnable(GL_DEPTH_TEST);
+
+    glBindVertexArray(0);
+    glUseProgram(0);
+}
+
+glm::vec3 ParticleRenderer::mouseToRotation(float mouseDeltaX, float mouseDeltaY, RotationMode rotationMode,
+                                            float sensitivity) const
+{
+    glm::vec3 rotationDelta(0.0f);
+
+    switch (rotationMode)
+    {
+    case RotationMode::Free:
+        // Free rotation: X mouse movement affects Z rotation, Y mouse movement affects X rotation
+        rotationDelta.x = -mouseDeltaY * sensitivity * 180.0f; // Pitch (alpha)
+        rotationDelta.y = 0.0f; // Roll (beta) - not easily controlled with 2D mouse
+        rotationDelta.z = mouseDeltaX * sensitivity * 180.0f; // Yaw (gamma)
+        break;
+
+    case RotationMode::X_Axis:
+        // Rotation around X axis only (pitch/alpha)
+        rotationDelta.x = -mouseDeltaY * sensitivity * 180.0f;
+        rotationDelta.y = 0.0f;
+        rotationDelta.z = 0.0f;
+        break;
+
+    case RotationMode::Y_Axis:
+        // Rotation around Y axis only (roll/beta)
+        rotationDelta.x = 0.0f;
+        rotationDelta.y = mouseDeltaX * sensitivity * 180.0f;
+        rotationDelta.z = 0.0f;
+        break;
+
+    case RotationMode::Z_Axis:
+        // Rotation around Z axis only (yaw/gamma)
+        rotationDelta.x = 0.0f;
+        rotationDelta.y = 0.0f;
+        rotationDelta.z = mouseDeltaX * sensitivity * 180.0f;
+        break;
+
+    case RotationMode::None:
+    default:
+        break;
+    }
+
+    return rotationDelta;
 }

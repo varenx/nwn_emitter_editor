@@ -26,20 +26,13 @@ class Camera
 {
 public:
     Camera();
-    void update(double mouseX, double mouseY, bool middlePressed, bool shiftPressed,
-                float scrollOffset);
+    void update(double mouseX, double mouseY, bool middlePressed, bool shiftPressed, float scrollOffset);
     void reset();
     void setLastMousePosition(double mouseX, double mouseY);
     [[nodiscard]] glm::mat4 getViewMatrix() const;
     [[nodiscard]] glm::mat4 getProjectionMatrix(float aspect) const;
-    [[nodiscard]] glm::vec3 getPosition() const
-    {
-        return position;
-    }
-    [[nodiscard]] glm::vec3 getTarget() const
-    {
-        return target;
-    }
+    [[nodiscard]] glm::vec3 getPosition() const { return position; }
+    [[nodiscard]] glm::vec3 getTarget() const { return target; }
 
 private:
     glm::vec3 position;
@@ -54,4 +47,4 @@ private:
     void updatePosition();
 };
 
-#endif// CAMERA_HPP
+#endif // CAMERA_HPP

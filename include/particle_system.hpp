@@ -19,7 +19,6 @@
 #ifndef PARTICLE_SYSTEM_HPP
 #define PARTICLE_SYSTEM_HPP
 
-#include "emitter.hpp"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -27,6 +26,8 @@
 #include <random>
 #include <unordered_map>
 #include <vector>
+#include "emitter.hpp"
+#include "grab_mode.hpp"
 
 struct Particle
 {
@@ -40,14 +41,11 @@ struct Particle
     float mass;
     bool active;
 
-    float getAge() const
-    {
-        return maxLife - life;
-    }
+    float getAge() const { return maxLife - life; }
 
-    Particle()
-        : position(0.0f), velocity(0.0f), color(1.0f), size(1.0f), life(0.0f), maxLife(1.0f),
-          rotation(0.0f), mass(1.0f), active(false)
+    Particle() :
+        position(0.0f), velocity(0.0f), color(1.0f), size(1.0f), life(0.0f), maxLife(1.0f), rotation(0.0f), mass(1.0f),
+        active(false)
     {
     }
 };
@@ -60,9 +58,7 @@ struct ParticleSystemState
     std::mt19937 rng;
     float animationTime;
 
-    ParticleSystemState()
-        : lastSpawnTime(0.0f), maxParticles(500000), rng(std::random_device{}()),
-          animationTime(0.0f)
+    ParticleSystemState() : lastSpawnTime(0.0f), maxParticles(500000), rng(std::random_device{}()), animationTime(0.0f)
     {
     }
 };
@@ -75,31 +71,66 @@ public:
 
     void initialize();
     void cleanup();
-    void render(const std::vector<EmitterNode>& emitters, float deltaTime, int viewportWidth,
-                int viewportHeight, int selectedEmitter = -1);
-    void renderToTexture(const std::vector<EmitterNode>& emitters, float deltaTime, int width,
-                         int height, int selectedEmitter = -1);
+    void render(const std::vector<EmitterNode>& emitters, float deltaTime, int viewportWidth, int viewportHeight,
+                int selectedEmitter = -1);
+    void renderToTexture(const std::vector<EmitterNode>& emitters, float deltaTime, int width, int height,
+                         int selectedEmitter = -1);
 
     void renderNodes(const std::vector<EmitterNode>& emitters, int selectedEmitter = -1);
     void renderGrid();
     void renderAxisGizmo(int viewportWidth, int viewportHeight);
+    void renderGrabModeIndicator(int viewportWidth, int viewportHeight, GrabMode grabMode,
+                                 const glm::vec3& emitterPosition);
+    void renderScaleModeIndicator(int viewportWidth, int viewportHeight, ScaleMode scaleMode,
+                                  const glm::vec3& emitterPosition, const glm::vec2& currentSize);
+    void renderRotationModeIndicator(int viewportWidth, int viewportHeight, RotationMode rotationMode,
+                                     const glm::vec3& emitterPosition);
     std::vector<glm::vec2> getAxisGizmoScreenPositions(int viewportWidth, int viewportHeight) const;
 
     void setCamera(const glm::mat4& view, const glm::mat4& projection);
     void setTextureDirectory(const std::string& directory);
 
-    GLuint getFramebufferTexture() const
-    {
-        return colorTexture;
-    }
+    GLuint getFramebufferTexture() const { return colorTexture; }
+
+    GLuint getFramebuffer() const { return framebuffer; }
 
     int getActiveParticleCount(int emitterIndex) const;
     int getTotalActiveParticleCount() const;
 
+    int pickEmitter(const std::vector<EmitterNode>& emitters, float mouseX, float mouseY, int viewportWidth,
+                    int viewportHeight) const;
+
+    glm::vec3 screenToWorldDelta(float startMouseX, float startMouseY, float currentMouseX, float currentMouseY,
+                                 int viewportWidth, int viewportHeight, const glm::vec3& referencePoint) const;
+
+    glm::vec3 screenToWorldPlaneMovement(float startMouseX, float startMouseY, float currentMouseX, float currentMouseY,
+                                         int viewportWidth, int viewportHeight, const glm::vec3& referencePoint) const;
+
+    glm::vec3 mouseToProportionalPlaneMovement(float mouseDeltaX, float mouseDeltaY, GrabMode grabMode,
+                                               float sensitivity = 0.01f) const;
+
+    glm::vec3 mouseToCameraRelativeMovement(float mouseDeltaX, float mouseDeltaY, GrabMode grabMode,
+                                            float sensitivity = 0.01f) const;
+
+    glm::vec2 mouseToScale(float mouseDeltaX, float mouseDeltaY, const glm::vec2& startSize, ScaleMode scaleMode,
+                           float sensitivity = 0.01f) const;
+
+    glm::vec3 mouseToRotation(float mouseDeltaX, float mouseDeltaY, RotationMode rotationMode,
+                              float sensitivity = 0.01f) const;
+
 private:
+    struct Ray
+    {
+        glm::vec3 origin;
+        glm::vec3 direction;
+    };
+
+    Ray createRayFromMouse(float mouseX, float mouseY, int viewportWidth, int viewportHeight) const;
+    bool rayIntersectsSphere(const Ray& ray, const glm::vec3& center, float radius, float& distance) const;
+    bool rayIntersectsCone(const Ray& ray, const glm::vec3& apex, const glm::vec3& direction, float height, float angle,
+                           float& distance) const;
     void updateParticles(const EmitterNode& emitter, ParticleSystemState& state, float deltaTime);
-    void spawnParticle(const EmitterNode& emitter, ParticleSystemState& state,
-                       const glm::vec3& emitterPos);
+    void spawnParticle(const EmitterNode& emitter, ParticleSystemState& state, const glm::vec3& emitterPos);
     void renderParticles(const EmitterNode& emitter, const ParticleSystemState& state);
 
     GLuint shaderProgram;
@@ -144,4 +175,4 @@ private:
     void renderEmitterNode(const EmitterNode& emitter, bool isSelected = false);
 };
 
-#endif// PARTICLE_SYSTEM_HPP
+#endif // PARTICLE_SYSTEM_HPP

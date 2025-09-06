@@ -29,10 +29,10 @@ struct Toast
     std::string title;
     std::string message;
     std::chrono::system_clock::time_point timestamp;
-    std::string icon;// Optional icon (empty string for no icon)
+    std::string icon; // Optional icon (empty string for no icon)
     bool showTimestamp = true;
-    float duration = 5.0f;       // Duration to show toast in seconds
-    float fadeOutDuration = 0.5f;// How long the fade out animation takes
+    float duration = 5.0f; // Duration to show toast in seconds
+    float fadeOutDuration = 0.5f; // How long the fade out animation takes
 
     // Internal state for animation
     float timeAlive = 0.0f;
@@ -40,33 +40,26 @@ struct Toast
     bool isVisible = true;
 
     Toast(const std::string& title, const std::string& message, const std::string& icon = "",
-          bool showTimestamp = true)
-        : title(title), message(message), timestamp(std::chrono::system_clock::now()), icon(icon),
-          showTimestamp(showTimestamp)
+          bool showTimestamp = true) :
+        title(title), message(message), timestamp(std::chrono::system_clock::now()), icon(icon),
+        showTimestamp(showTimestamp)
     {
     }
 
-    bool shouldRemove() const
-    {
-        return timeAlive > (duration + fadeOutDuration);
-    }
+    bool shouldRemove() const { return timeAlive > (duration + fadeOutDuration); }
 
     float getAlpha() const
     {
         if (timeAlive < 0.2f)
         {
-            // Fade in
             return timeAlive / 0.2f;
-        } else if (timeAlive > duration)
+        }
+        if (timeAlive > duration)
         {
-            // Fade out
             float fadeTime = timeAlive - duration;
             return 1.0f - (fadeTime / fadeOutDuration);
-        } else
-        {
-            // Fully visible
-            return 1.0f;
         }
+        return 1.0f;
     }
 };
 
@@ -76,19 +69,13 @@ public:
     ToastManager();
     ~ToastManager();
 
-    void addToast(const std::string& title, const std::string& message,
-                  const std::string& icon = "", bool showTimestamp = true);
+    void addToast(const std::string& title, const std::string& message, const std::string& icon = "",
+                  bool showTimestamp = true);
     void update(float deltaTime);
     void render();
 
-    void setMaxToasts(int max)
-    {
-        maxToasts = max;
-    }
-    void setDefaultDuration(float duration)
-    {
-        defaultDuration = duration;
-    }
+    void setMaxToasts(int max) { maxToasts = max; }
+    void setDefaultDuration(float duration) { defaultDuration = duration; }
 
 private:
     std::vector<Toast> toasts;
@@ -99,4 +86,4 @@ private:
     void removeExpiredToasts();
 };
 
-#endif// TOAST_MANAGER_HPP
+#endif // TOAST_MANAGER_HPP
